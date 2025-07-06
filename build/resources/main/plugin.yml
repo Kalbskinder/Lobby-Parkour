@@ -1,9 +1,9 @@
 name: Lobby-Parkour
 version: '1.0.0'
-main: me.kalbskinder.lobbyParkour.LobbyParkour
+main: net.crumb.lobbyParkour.LobbyParkour
 description: A plugin that adds an easy controllable lobby parkour
 api-version: '1.21'
-author: Kalbskinder
+author: crumb
 
 commands:
   lpk:
