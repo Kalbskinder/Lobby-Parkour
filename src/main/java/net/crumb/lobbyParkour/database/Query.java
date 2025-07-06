@@ -166,6 +166,25 @@ public class Query {
         }
     }
 
+    public List<Object[]> getAllParkourStarts() throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT pk_name, start_cp, start_cp_material FROM parkours WHERE start_cp IS NOT NULL";
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String name = rs.getString("pk_name");
+                String locStr = rs.getString("start_cp");
+                String materialStr = rs.getString("start_cp_material");
 
+                Location location = LocationHelper.stringToLocation(locStr);
+                Material material = Material.matchMaterial(materialStr.replace("minecraft:", "").toUpperCase());
+
+                if (location != null && material != null) {
+                    list.add(new Object[]{name, location, material});
+                }
+            }
+        }
+        return list;
+    }
 
 }

@@ -27,6 +27,7 @@ public class MainMenu {
         ItemStack parkourList = ItemMaker.createItem("minecraft:paper", 1, "<green>⚑ <green>Parkour List", Arrays.asList("<gray>Manage your parkour courses", "<yellow>Click to view!"));
         ItemStack newParkour = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green><bold>+ <reset><!italic><green>Create a new parkour", Arrays.asList("<gray>Setup a new parkour course", "<yellow>Click to setup!"));
         ItemStack parkourLeaderboard = ItemMaker.createItem("minecraft:name_tag", 1, "<green>✯ Parkour Leaderboards", Arrays.asList("<gray>Setup a parkour leaderboard", "<yellow>Click to setup!"));
+        ItemStack reloadParkours = ItemMaker.createItem("minecraft:clock", 1, "<green>🔁 Reload Parkours", Arrays.asList("<gray>Reload all parkours on the server", "<yellow>Click to reload!"));
 
         gui.setItem(0, backgroundDark);
         gui.setItem(1, backgroundDark);
@@ -57,6 +58,7 @@ public class MainMenu {
         gui.setItem(10, newParkour);
         gui.setItem(11, parkourList);
         gui.setItem(12, parkourLeaderboard);
+        gui.setItem(16, reloadParkours);
 
         player.openInventory(gui);
         player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.8f, 1.0f);

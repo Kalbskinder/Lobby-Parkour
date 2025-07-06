@@ -16,9 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -77,6 +75,50 @@ public class InventoryClickListener implements Listener {
             if (displayName.equals("⚑ Parkour List")) {
                 MapListMenu.openMenu(player);
             }
+
+            if (displayName.equals("🔁 Reload Parkours")) {
+                player.getOpenInventory().close();
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<green>Reloading all parkours..."));
+
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+
+                    List<Object[]> starts = query.getAllParkourStarts();
+
+                    for (Object[] data : starts) {
+                        String name = (String) data[0];
+                        Location loc = (Location) data[1];
+                        Material mat = (Material) data[2];
+
+                        loc.getBlock().setType(mat);
+
+                        UUID oldUuid = query.getStartEntityUuid(name);
+                        if (oldUuid != null) {
+                            Entity oldEntity = loc.getWorld().getEntity(oldUuid);
+                            if (oldEntity instanceof TextDisplay) {
+                                EntityRemove.suppress(oldUuid);
+                                oldEntity.remove();
+                            }
+                        }
+
+                        Location textDisplayLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
+                        TextDisplay display = loc.getWorld().spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
+                            textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>" + name));
+                            textDisplay.setBillboard(Display.Billboard.CENTER);
+                        });
+
+                        query.updateStartEntityUuid(name, display.getUniqueId());
+                    }
+
+                    player.sendMessage(MiniMessage.miniMessage().deserialize("<green>Parkours reloaded successfully!"));
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Error while reloading parkours."));
+                }
+            }
+
         }
 
         if (menuTitle.equals("Parkour List")) {
@@ -121,15 +163,11 @@ public class InventoryClickListener implements Listener {
                     Location loc = query.getStartLocation(name);
                     loc.getBlock().setType(Material.AIR);
 
-                    World world = loc.getWorld();
                     UUID entityUUID = query.getStartEntityUuid(name);
+                    EntityRemove.suppress(entityUUID);
 
                     query.deleteParkour(name);
 
-                    Entity entity = world.getEntity(entityUUID);
-                    TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
-                    assert textDisplay != null;
-                    textDisplay.remove();
 
 
                 } catch (SQLException ex) {
