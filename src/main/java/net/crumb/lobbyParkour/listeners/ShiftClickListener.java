@@ -23,6 +23,7 @@ public class ShiftClickListener implements Listener {
         Block block = event.getClickedBlock();
         if (block == null) return;
         Location location = block.getLocation();
+        if (location == null) return;
         String parkourName = "";
 
         try {
