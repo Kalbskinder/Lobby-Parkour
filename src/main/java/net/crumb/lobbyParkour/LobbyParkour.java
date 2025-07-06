@@ -19,7 +19,7 @@ public final class LobbyParkour extends JavaPlugin {
     }
 
     private void startUpMessage() {
-        Logger logger = Logger.getLogger("PTZ");
+        Logger logger = Logger.getLogger("Lobby-Parkour");
         logger.info("-------------------------------");
         logger.info("        LPK - Lobby Parkour       ");
         logger.info("          Version: 1.0.0");

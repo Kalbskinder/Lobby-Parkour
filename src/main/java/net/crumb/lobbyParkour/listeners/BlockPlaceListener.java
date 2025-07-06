@@ -48,7 +48,7 @@ public class BlockPlaceListener implements Listener {
 
         switch (itemName) {
             case "Parkour Start" -> {
-                MMUtils.sendMessage(player, "<green>Parkour start has been placed. Do /lpk to edit your parkour.");
+                MMUtils.sendMessage(player, "<hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to edit!</color>'><click:run_command:'/lpk'><color:#52a3ff>ⓘ</color> <color:#57ff65>A new parkour has been initialized. Do <white>/lpk</white> to edit your parkour.</color> <gray>(You can also click this message.)</gray></click></hover>");
                 player.getInventory().remove(item);
 
                 try {
@@ -57,7 +57,7 @@ public class BlockPlaceListener implements Listener {
                     String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.uu:HH:mm:ss"));
 
                     if (query.parkourMaps().size() == 28) {
-                        MMUtils.sendMessage(player, Prefixes.getPrefix() + "<red>You can't have more than 28 parkour maps!");
+                        MMUtils.sendMessage(player, "<color:#52a3ff>ⓘ</color> <color:#ff3358>You can't have more than 28 parkours!</color>");
                         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
                         event.setCancelled(true);
                         return;

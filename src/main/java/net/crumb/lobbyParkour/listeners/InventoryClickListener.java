@@ -67,10 +67,10 @@ public class InventoryClickListener implements Listener {
 
 
             if (displayName.equals("+ Create a new parkour")) {
-                player.getInventory().clear();
+                player.getInventory().clear(0);
                 player.getOpenInventory().close();
                 ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Parkour Start", Arrays.asList("<gray>Place this where you want", "<gray>your parkour to start.")), 0);
-            }
+            }   player.getInventory().setHeldItemSlot(0);
 
             if (displayName.equals("⚑ Parkour List")) {
                 MapListMenu.openMenu(player);
@@ -78,7 +78,7 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("🔁 Reload Parkours")) {
                 player.getOpenInventory().close();
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<green>Reloading all parkours..."));
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#57ff65>Reloading all parkours...</color>"));
 
                 try {
                     ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
@@ -111,11 +111,11 @@ public class InventoryClickListener implements Listener {
                         query.updateStartEntityUuid(name, display.getUniqueId());
                     }
 
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<green>Parkours reloaded successfully!"));
+                    player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#57ff65>Parkours reloaded successfully!</color>"));
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Error while reloading parkours."));
+                    player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#ff3358>There was an error while reloading the parkours!</color>"));
                 }
             }
 
@@ -164,11 +164,15 @@ public class InventoryClickListener implements Listener {
                     loc.getBlock().setType(Material.AIR);
 
                     UUID entityUUID = query.getStartEntityUuid(name);
+                    World world = loc.getWorld();
                     EntityRemove.suppress(entityUUID);
+                    Entity entity = world.getEntity(entityUUID);
+                    assert entity != null;
+                    entity.remove();
 
                     query.deleteParkour(name);
 
-
+                    player.sendMessage("<color:#52a3ff>ⓘ</color> <color:#57ff65>The parkour </color><white>"+name+"</white> has been deleted!</color>");
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -202,6 +206,7 @@ public class InventoryClickListener implements Listener {
                 if (loc == null) return;
 
                 player.teleport(loc);
+                player.sendMessage("<color:#52a3ff>ⓘ</color> <color:#57ff65>You have been teleported to the start of </color><white>"+name+"</white></color>");
             }
         }
 
