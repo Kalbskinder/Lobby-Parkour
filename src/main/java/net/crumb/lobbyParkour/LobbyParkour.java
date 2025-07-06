@@ -34,6 +34,7 @@ public final class LobbyParkour extends JavaPlugin {
         pm.registerEvents(new BlockBreakListener(this), this);
         pm.registerEvents(new RenameItemListener(), this);
         pm.registerEvents(new EntityRemove(), this);
+        pm.registerEvents(new ShiftClickListener(), this);
     }
 
     @Override
