@@ -1,11 +1,11 @@
-package me.kalbskinder.lobbyParkour;
+package net.crumb.lobbyParkour;
 
-import me.kalbskinder.lobbyParkour.commands.BaseCommand;
-import me.kalbskinder.lobbyParkour.database.ParkoursDatabase;
-import me.kalbskinder.lobbyParkour.listeners.BlockBreakListener;
-import me.kalbskinder.lobbyParkour.listeners.BlockPlaceListener;
-import me.kalbskinder.lobbyParkour.listeners.InventoryClickListener;
-import me.kalbskinder.lobbyParkour.listeners.RenameItemListener;
+import net.crumb.lobbyParkour.commands.BaseCommand;
+import net.crumb.lobbyParkour.database.ParkoursDatabase;
+import net.crumb.lobbyParkour.listeners.BlockBreakListener;
+import net.crumb.lobbyParkour.listeners.BlockPlaceListener;
+import net.crumb.lobbyParkour.listeners.InventoryClickListener;
+import net.crumb.lobbyParkour.listeners.RenameItemListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;

@@ -1,6 +1,6 @@
-package me.kalbskinder.lobbyParkour.guis;
+package net.crumb.lobbyParkour.guis;
 
-import me.kalbskinder.lobbyParkour.utils.ItemMaker;
+import net.crumb.lobbyParkour.utils.ItemMaker;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;

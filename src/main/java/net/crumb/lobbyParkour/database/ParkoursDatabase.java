@@ -1,4 +1,4 @@
-package me.kalbskinder.lobbyParkour.database;
+package net.crumb.lobbyParkour.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

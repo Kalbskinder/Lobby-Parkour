@@ -1,9 +1,9 @@
-package me.kalbskinder.lobbyParkour.commands;
+package net.crumb.lobbyParkour.commands;
 
-import me.kalbskinder.lobbyParkour.LobbyParkour;
-import me.kalbskinder.lobbyParkour.guis.MainMenu;
-import me.kalbskinder.lobbyParkour.utils.MMUtils;
-import me.kalbskinder.lobbyParkour.utils.Prefixes;
+import net.crumb.lobbyParkour.LobbyParkour;
+import net.crumb.lobbyParkour.guis.MainMenu;
+import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.Prefixes;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

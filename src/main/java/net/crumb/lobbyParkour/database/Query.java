@@ -1,6 +1,6 @@
-package me.kalbskinder.lobbyParkour.database;
+package net.crumb.lobbyParkour.database;
 
-import me.kalbskinder.lobbyParkour.utils.LocationHelper;
+import net.crumb.lobbyParkour.utils.LocationHelper;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Query {

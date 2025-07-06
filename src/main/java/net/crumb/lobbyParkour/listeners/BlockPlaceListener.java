@@ -1,17 +1,15 @@
-package me.kalbskinder.lobbyParkour.listeners;
+package net.crumb.lobbyParkour.listeners;
 
-import me.kalbskinder.lobbyParkour.LobbyParkour;
-import me.kalbskinder.lobbyParkour.database.ParkoursDatabase;
-import me.kalbskinder.lobbyParkour.database.Query;
-import me.kalbskinder.lobbyParkour.utils.MMUtils;
-import me.kalbskinder.lobbyParkour.utils.Prefixes;
-import net.kyori.adventure.text.Component;
+import net.crumb.lobbyParkour.LobbyParkour;
+import net.crumb.lobbyParkour.database.ParkoursDatabase;
+import net.crumb.lobbyParkour.database.Query;
+import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.Prefixes;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
@@ -22,10 +20,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class BlockPlaceListener implements Listener {
     private final LobbyParkour plugin;

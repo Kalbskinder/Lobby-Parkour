@@ -1,4 +1,4 @@
-package me.kalbskinder.lobbyParkour.utils;
+package net.crumb.lobbyParkour.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

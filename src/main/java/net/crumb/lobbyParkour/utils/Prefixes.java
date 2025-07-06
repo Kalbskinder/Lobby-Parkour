@@ -1,4 +1,4 @@
-package me.kalbskinder.lobbyParkour.utils;
+package net.crumb.lobbyParkour.utils;
 
 public class Prefixes {
     public static String getPrefix() {

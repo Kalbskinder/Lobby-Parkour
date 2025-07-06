@@ -1,6 +1,4 @@
-package me.kalbskinder.lobbyParkour.utils;
-
-import org.bukkit.inventory.ItemType;
+package net.crumb.lobbyParkour.utils;
 
 import java.util.List;
 

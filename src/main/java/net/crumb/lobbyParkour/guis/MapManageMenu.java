@@ -1,10 +1,9 @@
-package me.kalbskinder.lobbyParkour.guis;
+package net.crumb.lobbyParkour.guis;
 
-import me.kalbskinder.lobbyParkour.LobbyParkour;
-import me.kalbskinder.lobbyParkour.database.ParkoursDatabase;
-import me.kalbskinder.lobbyParkour.database.Query;
-import me.kalbskinder.lobbyParkour.utils.ItemMaker;
-import net.kyori.adventure.text.Component;
+import net.crumb.lobbyParkour.LobbyParkour;
+import net.crumb.lobbyParkour.database.ParkoursDatabase;
+import net.crumb.lobbyParkour.database.Query;
+import net.crumb.lobbyParkour.utils.ItemMaker;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

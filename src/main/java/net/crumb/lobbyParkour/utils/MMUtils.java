@@ -1,4 +1,4 @@
-package me.kalbskinder.lobbyParkour.utils;
+package net.crumb.lobbyParkour.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
