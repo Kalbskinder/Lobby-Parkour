@@ -123,12 +123,15 @@ public class InventoryClickListener implements Listener {
 
                     World world = loc.getWorld();
                     UUID entityUUID = query.getStartEntityUuid(name);
+
+                    query.deleteParkour(name);
+
                     Entity entity = world.getEntity(entityUUID);
                     TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
                     assert textDisplay != null;
                     textDisplay.remove();
 
-                    query.deleteParkour(name);
+
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }

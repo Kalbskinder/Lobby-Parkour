@@ -23,21 +23,34 @@ public class BlockBreakListener implements Listener {
     public void onBlockBreak(BlockBreakEvent e) {
         Block block = e.getBlock();
         Location blockLocation = block.getLocation();
+        Location aboveLocation = blockLocation.clone().add(0, 1, 0);
 
         try {
             ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
             Query query = new Query(database.getConnection());
-            String parkourName = query.getMapnameByPkSpawn(blockLocation);
-            if (parkourName == null) return;
-            Location start_cpLocation = query.getStartLocation(parkourName);
-            if (start_cpLocation == null) return;
 
-            if (start_cpLocation.equals(blockLocation)) {
-                e.setCancelled(true);
+            // Check block location
+            String parkourName = query.getMapnameByPkSpawn(blockLocation);
+            if (parkourName != null) {
+                Location startLocation = query.getStartLocation(parkourName);
+                if (startLocation != null && startLocation.equals(blockLocation)) {
+                    e.setCancelled(true);
+                    return;
+                }
+            }
+
+            // Check above block
+            String parkourNameAbove = query.getMapnameByPkSpawn(aboveLocation);
+            if (parkourNameAbove != null) {
+                Location startLocationAbove = query.getStartLocation(parkourNameAbove);
+                if (startLocationAbove != null && startLocationAbove.equals(aboveLocation)) {
+                    e.setCancelled(true);
+                }
             }
 
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
+
 }
