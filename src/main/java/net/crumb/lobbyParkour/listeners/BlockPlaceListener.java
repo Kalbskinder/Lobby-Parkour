@@ -48,7 +48,7 @@ public class BlockPlaceListener implements Listener {
 
         switch (itemName) {
             case "Parkour Start" -> {
-                MMUtils.sendMessage(player, "<green>Parkour start has been placed");
+                MMUtils.sendMessage(player, "<green>Parkour start has been placed. Do /lpk to edit your parkour.");
                 player.getInventory().remove(item);
 
                 try {
@@ -63,15 +63,18 @@ public class BlockPlaceListener implements Listener {
                         return;
                     }
 
-                    query.createParkour("New Parkour " + dateTime, location);
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+
 
                     World world = player.getWorld();
                     Location textDisplayLocation = new Location(world, location.getX() + 0.5, location.getY() + 1.0, location.getZ() + 0.5);
+                    String parkourName = "New Parkour "+dateTime;
                     TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, entity -> {
-                        entity.text(MiniMessage.miniMessage().deserialize("<green>New Parkour" + dateTime));
+                        entity.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+parkourName));
                         entity.setBillboard(Display.Billboard.CENTER);
                     });
+
+                    query.createParkour(parkourName, location, display.getUniqueId());
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }

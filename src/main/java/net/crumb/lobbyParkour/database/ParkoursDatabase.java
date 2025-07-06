@@ -18,7 +18,9 @@ public class ParkoursDatabase {
                 end_cp TEXT DEFAULT NULL,
                 start_cp TEXT DEFAULT NULL,
                 end_cp_material TEXT DEFAULT NULL,
-                start_cp_material TEXT DEFAULT NULL
+                start_cp_material TEXT DEFAULT NULL,
+                start_cp_entity_uuid TEXT DEFAULT NULL,
+                end_cp_entity_uuid TEXT DEFAULT NULL
             );
         """);
 
@@ -29,6 +31,7 @@ public class ParkoursDatabase {
                 cp_index INTEGER NOT NULL,
                 location TEXT NOT NULL,
                 material TEXT NOT NULL,
+                entity_uuid TEXT NOT NULL,
                 FOREIGN KEY (parkour_id) REFERENCES parkours(id) ON DELETE CASCADE
             )
         """);

@@ -15,7 +15,10 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -28,6 +31,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class InventoryClickListener implements Listener {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
@@ -116,6 +120,14 @@ public class InventoryClickListener implements Listener {
 
                     Location loc = query.getStartLocation(name);
                     loc.getBlock().setType(Material.AIR);
+
+                    World world = loc.getWorld();
+                    UUID entityUUID = query.getStartEntityUuid(name);
+                    Entity entity = world.getEntity(entityUUID);
+                    TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
+                    assert textDisplay != null;
+                    textDisplay.remove();
+
                     query.deleteParkour(name);
                 } catch (SQLException ex) {
                     ex.printStackTrace();

@@ -7,8 +7,12 @@ import net.crumb.lobbyParkour.guis.MapListMenu;
 import net.crumb.lobbyParkour.utils.MMUtils;
 import net.crumb.lobbyParkour.utils.Prefixes;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -20,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class RenameItemListener implements Listener {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
@@ -58,6 +63,13 @@ public class RenameItemListener implements Listener {
             }
 
             query.renameParkour(oldName, itemName);
+            UUID entityUUID = query.getStartEntityUuid(itemName);
+            Location startLocation = query.getStartLocation(itemName);
+            World world = startLocation.getWorld();
+            Entity entity = world.getEntity(entityUUID);
+            TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
+            assert textDisplay != null;
+            textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
 
         } catch (SQLException ex) {
             ex.printStackTrace();

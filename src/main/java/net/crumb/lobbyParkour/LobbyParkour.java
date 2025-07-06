@@ -2,10 +2,7 @@ package net.crumb.lobbyParkour;
 
 import net.crumb.lobbyParkour.commands.BaseCommand;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
-import net.crumb.lobbyParkour.listeners.BlockBreakListener;
-import net.crumb.lobbyParkour.listeners.BlockPlaceListener;
-import net.crumb.lobbyParkour.listeners.InventoryClickListener;
-import net.crumb.lobbyParkour.listeners.RenameItemListener;
+import net.crumb.lobbyParkour.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,6 +33,7 @@ public final class LobbyParkour extends JavaPlugin {
         pm.registerEvents(new BlockPlaceListener(this), this);
         pm.registerEvents(new BlockBreakListener(this), this);
         pm.registerEvents(new RenameItemListener(), this);
+        pm.registerEvents(new EntityRemove(), this);
     }
 
     @Override
