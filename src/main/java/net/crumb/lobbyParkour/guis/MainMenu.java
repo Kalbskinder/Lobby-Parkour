@@ -17,6 +17,7 @@ public class MainMenu {
 
 
     public static void openMenu(Player player) {
+        if (!player.hasPermission("lpk.admin")) return;
         Inventory gui = Bukkit.createInventory(null, 9 * 3, miniMessage.deserialize("          <bold><gradient:#d81bf5:#fa2dc3>Lobby Parkour<reset>"));
         List<String> emptyLore = new ArrayList<>();
 

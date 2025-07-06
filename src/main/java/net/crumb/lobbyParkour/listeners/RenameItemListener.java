@@ -37,6 +37,7 @@ public class RenameItemListener implements Listener {
 
         String title = PlainTextComponentSerializer.plainText().serialize(e.getView().title());
         if (!title.equalsIgnoreCase("Rename Parkour")) return;
+        if (!player.hasPermission("lpk.admin")) return;
 
         if (e.getSlot() == 0) {
             e.setCancelled(true);

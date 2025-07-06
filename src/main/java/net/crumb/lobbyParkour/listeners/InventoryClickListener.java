@@ -39,6 +39,7 @@ public class InventoryClickListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
         Inventory clickedInventory = event.getClickedInventory();
+        if (!player.hasPermission("lpk.admin")) return;
 
         if (clickedInventory == null) return;
         if (clickedInventory.getType().equals(InventoryType.ANVIL)) return;
