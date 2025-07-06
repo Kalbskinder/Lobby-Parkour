@@ -19,6 +19,7 @@ public class MapListMenu {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
     public static void openMenu(Player player) {
+        if (!player.hasPermission("lpk.admin")) return;
         Inventory gui = Bukkit.createInventory(null, 9 * 6, miniMessage.deserialize("<bold><gradient:#369e36:#2bbf11>Parkour List<reset>"));
         List<String> emptyLore = new ArrayList<>();
 

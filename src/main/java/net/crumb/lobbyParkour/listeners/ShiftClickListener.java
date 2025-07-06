@@ -34,7 +34,7 @@ public class ShiftClickListener implements Listener {
         }
 
         if (parkourName.isEmpty()) return;
-
+        if (!player.hasPermission("lpk.admin")) return;
         MapManageMenu.openMenu(player, parkourName);
     }
 }
