@@ -57,7 +57,7 @@ public class RenameItemListener implements Listener {
             Query query = new Query(database.getConnection());
 
             if (query.parkourExists(itemName)) {
-                MMUtils.sendMessage(player, prefix + "<red>A map with this name already exists!");
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#ff3358>A parkour with the same already exists!</color>"));
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
                 player.closeInventory();
                 return;
@@ -71,7 +71,7 @@ public class RenameItemListener implements Listener {
             TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
             assert textDisplay != null;
             textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
-
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#57ff65>The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!</color>"));
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

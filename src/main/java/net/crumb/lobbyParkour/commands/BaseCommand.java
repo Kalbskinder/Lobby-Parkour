@@ -27,7 +27,7 @@ public class BaseCommand implements CommandExecutor {
         }
 
         if (!player.hasPermission("lpk.admin")) {
-            MMUtils.sendMessage(player, prefix + "<red>You don't have permission to execute this command.");
+            MMUtils.sendMessage(player, "<color:#52a3ff>ⓘ</color> <color:#ff3358>You don't have the permission to execute this command!</color>");
             player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
             return true;
         }
@@ -43,7 +43,7 @@ public class BaseCommand implements CommandExecutor {
             }
 
             default -> {
-                MMUtils.sendMessage(player, prefix + "<white>Use <yellow>/lpk help<white> for a list of commands.");
+                MMUtils.sendMessage(player, "<color:#52a3ff>ⓘ</color> <color:#ffeb7a>Unknown command! Do <white>/lpk help</white> to see the list of available commands.</color>");
             }
         }
 
