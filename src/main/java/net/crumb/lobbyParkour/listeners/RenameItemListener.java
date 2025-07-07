@@ -5,6 +5,7 @@ import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.MapListMenu;
 import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.MessageType;
 import net.crumb.lobbyParkour.utils.Prefixes;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
@@ -57,7 +58,7 @@ public class RenameItemListener implements Listener {
             Query query = new Query(database.getConnection());
 
             if (query.parkourExists(itemName)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#ff3358>A parkour with the same already exists!</color>"));
+                MMUtils.sendMessage(player, "A parkour with the same already exists!", MessageType.ERROR);
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
                 player.closeInventory();
                 return;
@@ -71,7 +72,7 @@ public class RenameItemListener implements Listener {
             TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
             assert textDisplay != null;
             textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#57ff65>The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!</color>"));
+            MMUtils.sendMessage(player, "The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!", MessageType.INFO);
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

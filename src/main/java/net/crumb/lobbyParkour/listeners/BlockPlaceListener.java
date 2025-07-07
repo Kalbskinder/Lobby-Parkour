@@ -4,6 +4,7 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.MessageType;
 import net.crumb.lobbyParkour.utils.Prefixes;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.ChatColor;
@@ -48,7 +49,7 @@ public class BlockPlaceListener implements Listener {
 
         switch (itemName) {
             case "Parkour Start" -> {
-                MMUtils.sendMessage(player, "<hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to edit!</color>'><click:run_command:'/lpk'><color:#52a3ff>ⓘ</color> <color:#57ff65>A new parkour has been initialized. Do <white>/lpk</white> to edit your parkour.</color> <gray>(You can also click this message.)</gray></click></hover>");
+                MMUtils.sendMessage(player, "<hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to edit!</color>'><click:run_command:'/lpk'>A new parkour has been initialized. Do <white>/lpk</white> to edit your parkour. <gray>(You can also click this message.)</gray></click></hover>", MessageType.INFO);
                 player.getInventory().remove(item);
 
                 try {
@@ -57,7 +58,7 @@ public class BlockPlaceListener implements Listener {
                     String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.uu:HH:mm:ss"));
 
                     if (query.parkourMaps().size() == 28) {
-                        MMUtils.sendMessage(player, "<color:#52a3ff>ⓘ</color> <color:#ff3358>You can't have more than 28 parkours!</color>");
+                        MMUtils.sendMessage(player, "You can't have more than 28 parkours!", MessageType.ERROR);
                         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
                         event.setCancelled(true);
                         return;

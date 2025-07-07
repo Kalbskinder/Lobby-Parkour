@@ -8,6 +8,8 @@ import net.crumb.lobbyParkour.guis.MapListMenu;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
 import net.crumb.lobbyParkour.guis.ParkourStartPlateGUI;
 import net.crumb.lobbyParkour.utils.ItemMaker;
+import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.MessageType;
 import net.crumb.lobbyParkour.utils.PressurePlates;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -79,7 +81,8 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("🔁 Reload Parkours")) {
                 player.getOpenInventory().close();
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#57ff65>Reloading all parkours...</color>"));
+                MMUtils.sendMessage(player, "Reloading all parkours...", MessageType.INFO);
+
 
                 try {
                     ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
@@ -112,11 +115,11 @@ public class InventoryClickListener implements Listener {
                         query.updateStartEntityUuid(name, display.getUniqueId());
                     }
 
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#57ff65>Parkours reloaded successfully!</color>"));
+                    MMUtils.sendMessage(player, "Parkours reloaded successfully!", MessageType.INFO);
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#ff3358>There was an error while reloading the parkours!</color>"));
+                    MMUtils.sendMessage(player, "There was an error while reloading the parkours!", MessageType.ERROR);
                 }
             }
 
@@ -173,7 +176,7 @@ public class InventoryClickListener implements Listener {
 
                     query.deleteParkour(name);
 
-                    player.sendMessage("<color:#52a3ff>ⓘ</color> <color:#57ff65>The parkour </color><white>"+name+"</white> has been deleted!</color>");
+                    MMUtils.sendMessage(player, "The parkour <white>"+name+"</white> has been deleted!", MessageType.INFO);
 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -207,7 +210,7 @@ public class InventoryClickListener implements Listener {
                 if (loc == null) return;
 
                 player.teleport(loc);
-                player.sendMessage("<color:#52a3ff>ⓘ</color> <color:#57ff65>You have been teleported to the start of </color><white>"+name+"</white></color>");
+                MMUtils.sendMessage(player, "You have been teleported to the start of <white>"+name+"</white>!", MessageType.INFO);
             }
         }
 
