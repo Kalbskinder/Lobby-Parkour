@@ -83,8 +83,6 @@ public class MapManageMenu {
             e.printStackTrace();
         }
 
-        System.out.println(locationText);
-
         if (locationText.isEmpty()) return null;
 
         ItemMeta meta = item.getItemMeta();

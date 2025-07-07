@@ -5,6 +5,7 @@ import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.MapListMenu;
 import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.MessageType;
 import net.crumb.lobbyParkour.utils.Prefixes;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
@@ -57,21 +58,32 @@ public class RenameItemListener implements Listener {
             Query query = new Query(database.getConnection());
 
             if (query.parkourExists(itemName)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#ff3358>A parkour with the same already exists!</color>"));
+                MMUtils.sendMessage(player, "A parkour with the same already exists!", MessageType.ERROR);
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1.0f, 1.0f);
                 player.closeInventory();
                 return;
             }
 
             query.renameParkour(oldName, itemName);
-            UUID entityUUID = query.getStartEntityUuid(itemName);
+
+            UUID startEntityUuid = query.getStartEntityUuid(itemName);
             Location startLocation = query.getStartLocation(itemName);
-            World world = startLocation.getWorld();
-            Entity entity = world.getEntity(entityUUID);
-            TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
-            assert textDisplay != null;
-            textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<color:#52a3ff>ⓘ</color> <color:#57ff65>The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!</color>"));
+            World startLocationWorld = startLocation.getWorld();
+            Entity startEntity = startLocationWorld.getEntity(startEntityUuid);
+            TextDisplay startTextDisplay = (startEntity instanceof TextDisplay) ? (TextDisplay) startEntity : null;
+            assert startTextDisplay != null;
+            startTextDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
+
+
+            UUID endEntityUuid = query.getEndEntityUuid(itemName);
+            Location endLocation = query.getEndLocation(itemName);
+            World endLocationWorld = endLocation.getWorld();
+            Entity endEntity = endLocationWorld.getEntity(endEntityUuid);
+            TextDisplay endTextDisplay = (endEntity instanceof TextDisplay) ? (TextDisplay) endEntity : null;
+            assert endTextDisplay != null;
+            endTextDisplay.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>"+itemName));
+
+            MMUtils.sendMessage(player, "The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!", MessageType.INFO);
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
