@@ -1,5 +1,7 @@
 package net.crumb.lobbyParkour.utils;
 
+import org.bukkit.Material;
+
 import java.util.List;
 
 public class PressurePlates {
@@ -36,5 +38,9 @@ public class PressurePlates {
                     .append(" ");
         }
         return formatted.toString().trim();
+    }
+
+    public static boolean isPressurePlate(Material material) {
+        return material != null && material.name().endsWith("_PRESSURE_PLATE");
     }
 }
