@@ -51,7 +51,7 @@ public final class LobbyParkour extends JavaPlugin {
             parkoursDatabase = new ParkoursDatabase(getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
         } catch (SQLException ex) {
             ex.printStackTrace();
-            System.out.println("Failed to connect to the database! " + ex.getMessage());
+            instance.getLogger().severe("Failed to connect to the database! " + ex.getMessage());
             Bukkit.getPluginManager().disablePlugin(this);
         }
     }
