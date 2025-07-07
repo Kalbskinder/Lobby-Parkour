@@ -299,7 +299,7 @@ public class InventoryClickListener implements Listener {
                         }
 
                     } else {
-                        System.out.println("Unknown material: " + plate);
+                        plugin.getLogger().warning("Unknown material: \" + plate");
                     }
                 }
             });
