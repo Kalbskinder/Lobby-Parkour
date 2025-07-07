@@ -4,9 +4,8 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.MapListMenu;
-import net.crumb.lobbyParkour.utils.MMUtils;
-import net.crumb.lobbyParkour.utils.MessageType;
-import net.crumb.lobbyParkour.utils.Prefixes;
+import net.crumb.lobbyParkour.utils.*;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -25,11 +24,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
 
 public class RenameItemListener implements Listener {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
     private static final String prefix = Prefixes.getPrefix();
+    private static final TextFormatter textFormatter = new TextFormatter();
+
 
     @EventHandler
     public void onItemRename(InventoryClickEvent e) {
@@ -72,7 +74,11 @@ public class RenameItemListener implements Listener {
             Entity startEntity = startLocationWorld.getEntity(startEntityUuid);
             TextDisplay startTextDisplay = (startEntity instanceof TextDisplay) ? (TextDisplay) startEntity : null;
             assert startTextDisplay != null;
-            startTextDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
+            Map<String, String> placeholders = Map.of(
+                    "parkour_name", itemName
+            );
+            Component startText = textFormatter.formatString(ConfigManager.getFormat().getStartPlate(), placeholders);
+            startTextDisplay.text(startText);
 
 
             UUID endEntityUuid = query.getEndEntityUuid(itemName);
@@ -81,7 +87,11 @@ public class RenameItemListener implements Listener {
             Entity endEntity = endLocationWorld.getEntity(endEntityUuid);
             TextDisplay endTextDisplay = (endEntity instanceof TextDisplay) ? (TextDisplay) endEntity : null;
             assert endTextDisplay != null;
-            endTextDisplay.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>"+itemName));
+            Map<String, String> endPlaceholders = Map.of(
+                    "parkour_name", itemName
+            );
+            Component endText = textFormatter.formatString(ConfigManager.getFormat().getEndPlate(), endPlaceholders);
+            endTextDisplay.text(endText);
 
             MMUtils.sendMessage(player, "The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!", MessageType.INFO);
         } catch (SQLException ex) {

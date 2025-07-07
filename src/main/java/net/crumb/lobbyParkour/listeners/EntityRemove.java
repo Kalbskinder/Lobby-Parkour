@@ -4,6 +4,9 @@ import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
+import net.crumb.lobbyParkour.utils.ConfigManager;
+import net.crumb.lobbyParkour.utils.TextFormatter;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,12 +20,14 @@ import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 public class EntityRemove implements Listener {
 
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
+    private static final TextFormatter textFormatter = new TextFormatter();
 
     // 👇 Entities that should NOT be auto-respawned
     private static final Set<UUID> suppressed = new HashSet<>();
@@ -56,11 +61,17 @@ public class EntityRemove implements Listener {
 
             String mapName = query.getMapNameByStartUuid(uuid);
             if (mapName != null) {
+
+                Map<String, String> placeholders = Map.of(
+                        "parkour_name", mapName
+                );
+                Component startText = textFormatter.formatString(ConfigManager.getFormat().getStartPlate(), placeholders);
+
                 Location loc = query.getStartLocation(mapName);
                 World world = loc.getWorld();
                 Location textDisplayLocation = new Location(world, loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
                 TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
-                    textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>" + mapName));
+                    textDisplay.text(startText);
                     textDisplay.setBillboard(Display.Billboard.CENTER);
                 });
                 query.updateStartEntityUuid(mapName, display.getUniqueId());
@@ -68,11 +79,16 @@ public class EntityRemove implements Listener {
 
             String mapName2 = query.getMapNameByEndUuid(uuid);
             if (mapName2 != null) {
+                Map<String, String> placeholders = Map.of(
+                        "parkour_name", mapName2
+                );
+                Component endText = textFormatter.formatString(ConfigManager.getFormat().getEndPlate(), placeholders);
+
                 Location loc = query.getEndLocation(mapName2);
                 World world = loc.getWorld();
                 Location textDisplayLocation = new Location(world, loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
                 TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
-                    textDisplay.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>" + mapName2));
+                    textDisplay.text(endText);
                     textDisplay.setBillboard(Display.Billboard.CENTER);
                 });
                 query.updateEndEntityUuid(mapName2, display.getUniqueId());

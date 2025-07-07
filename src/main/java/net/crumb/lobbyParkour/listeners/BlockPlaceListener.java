@@ -3,10 +3,8 @@ package net.crumb.lobbyParkour.listeners;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
-import net.crumb.lobbyParkour.utils.ItemMaker;
-import net.crumb.lobbyParkour.utils.MMUtils;
-import net.crumb.lobbyParkour.utils.MessageType;
-import net.crumb.lobbyParkour.utils.Prefixes;
+import net.crumb.lobbyParkour.utils.*;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -32,6 +30,7 @@ public class BlockPlaceListener implements Listener {
     public BlockPlaceListener(LobbyParkour plugin) {
         this.plugin = plugin;
     }
+    private static final TextFormatter textFormatter = new TextFormatter();
 
     private final Map<UUID, Map<String, Object>> parkourCache = new HashMap<>();
 
@@ -73,10 +72,15 @@ public class BlockPlaceListener implements Listener {
                 String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.uu:HH:mm:ss"));
                 String parkourName = "New Parkour "+dateTime;
 
+                Map<String, String> placeholders = Map.of(
+                        "parkour_name", parkourName
+                );
+                Component startText = textFormatter.formatString(ConfigManager.getFormat().getStartPlate(), placeholders);
+
                 World world = player.getWorld();
                 Location textDisplayLocation = new Location(world, location.getX() + 0.5, location.getY() + 1.0, location.getZ() + 0.5);
                 TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, entity -> {
-                    entity.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+parkourName));
+                    entity.text(startText);
                     entity.setBillboard(Display.Billboard.CENTER);
                 });
 
@@ -154,10 +158,15 @@ public class BlockPlaceListener implements Listener {
                     Location startLocation = (Location) data.get("startLocation");
                     UUID startEntityUuid = (UUID) data.get("startEntityUuid");
 
+                    Map<String, String> placeholders = Map.of(
+                            "parkour_name", parkourName
+                    );
+                    Component endText = textFormatter.formatString(ConfigManager.getFormat().getEndPlate(), placeholders);
+
                     World world = player.getWorld();
                     Location textDisplayLocation = new Location(world, location.getX() + 0.5, location.getY() + 1.0, location.getZ() + 0.5);
                     TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, entity -> {
-                        entity.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>"+parkourName));
+                        entity.text(endText);
                         entity.setBillboard(Display.Billboard.CENTER);
                     });
 

@@ -3,6 +3,7 @@ package net.crumb.lobbyParkour;
 import net.crumb.lobbyParkour.commands.BaseCommand;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.listeners.*;
+import net.crumb.lobbyParkour.utils.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -47,12 +48,19 @@ public final class LobbyParkour extends JavaPlugin {
         startUpMessage();
         registerListeners();
 
+        saveResource("config.yml", /* replace */ false);
+
+        ConfigManager.loadConfig(getConfig());
+
         try {
             parkoursDatabase = new ParkoursDatabase(getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
         } catch (SQLException ex) {
             ex.printStackTrace();
-            instance.getLogger().severe("Failed to connect to the database! " + ex.getMessage());
+            getLogger().severe("Failed to connect to the database! " + ex.getMessage());
             Bukkit.getPluginManager().disablePlugin(this);
+        }
+        if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            getLogger().warning("Could not find PlaceholderAPI! ");
         }
     }
 
