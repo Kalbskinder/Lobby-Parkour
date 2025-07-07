@@ -24,7 +24,9 @@ formatting:
   # %m% -> Minutes
   # %s% -> Seconds
   # %ms% -> Milliseconds
-  timer:
+  # %cp% -> Current amount of passed checkpoints
+  # %cp-max% -> Amount of checkpoints in the course
+  timer: "<color:#7ae0ff>%m%:%s%:%ms%</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%cp%</color></color><color:#b8b8b8>/%cp-max%</color> <green>⚑</green>"
 
   # %parkour_name% -> The name of the parkour
   # %player_name% -> The name of the player

@@ -4,7 +4,7 @@ main: net.crumb.lobbyParkour.LobbyParkour
 description: A plugin that adds an easy controllable lobby parkour
 api-version: '1.21'
 author: crumb
-
+softdepend: ["PlaceholderAPI"]
 commands:
   lpk:
     description: Main command

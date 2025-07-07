@@ -4,8 +4,10 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
-import net.crumb.lobbyParkour.utils.MMUtils;
-import net.crumb.lobbyParkour.utils.PressurePlates;
+import net.crumb.lobbyParkour.systems.ParkourSession;
+import net.crumb.lobbyParkour.systems.ParkourSessionManager;
+import net.crumb.lobbyParkour.systems.ParkourTimer;
+import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -15,8 +17,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,18 +69,68 @@ public class PlayerInteractListener implements Listener {
             if (block != null && isPressurePlate(block.getType())) {
                 Location location = block.getLocation();
                 String parkourName = "";
+                boolean isPkStart = false;
+                boolean isPkEnd = false;
 
                 try {
                     ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
                     Query query = new Query(database.getConnection());
-                    parkourName = query.getMapnameByPkSpawn(location);
+
+                    List<Object[]> pkStarts = query.getAllParkourStarts();
+                    isPkStart = pkStarts.stream().anyMatch(entry -> (entry[1]).equals(location));
+
+                    List<Object[]> pkEnds = query.getAllParkourEnds();
+                    isPkEnd = pkEnds.stream().anyMatch(entry -> (entry[1]).equals(location));
+
+                    if (isPkStart) {
+                        parkourName = query.getMapnameByPkSpawn(location);
+                    } else if (isPkEnd) {
+                        parkourName = query.getMapnameByPkEnd(location);
+                    }
+
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
 
                 if (parkourName.isEmpty()) return;
-                MMUtils.sendMessage(player, "Parkour: "+parkourName);
-                player.sendActionBar(MiniMessage.miniMessage().deserialize("<color:#7ae0ff>00:00:000</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>0</color></color><color:#b8b8b8>/10</color> <green>⚑</green>"));
+
+                if (isPkStart) {
+                    ParkourTimer.start();
+                    if (ParkourSessionManager.isInSession(player.getUniqueId())) {
+                        ParkourSessionManager.setTime(player.getUniqueId(), 0f);
+                    } else {
+                        ParkourSessionManager.startSession(player.getUniqueId(), parkourName);
+                        List<String> emptyLore = new ArrayList<>();
+                        String resetPkActionId = player.getUniqueId() + "reset-pk";
+                        String leavePkActionId = player.getUniqueId() + "leave-pk";
+                        String lastCheckpointActionId = player.getUniqueId() + "last-checkpoint-pk";
+
+                        ItemActionHandler.registerAction(resetPkActionId, p -> {
+                            p.teleport(location);
+                        });
+
+                        ItemActionHandler.registerAction(leavePkActionId, p -> {
+                            p.teleport(location);
+                        });
+
+                        ItemActionHandler.registerAction(lastCheckpointActionId, p -> {
+                            p.sendMessage("Teleported to the last checkpoint!");
+                        });
+
+                        ItemStack restItem = ActionItemMaker.createItem("minecraft:oak_door", 1, "<red>Reset", emptyLore, resetPkActionId);
+                        ItemStack leaveItem = ActionItemMaker.createItem("minecraft:red_bed", 1, "<red>Leave", emptyLore, leavePkActionId);
+                        ItemStack lastCpItem = ActionItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Last Checkpoint", emptyLore, lastCheckpointActionId);
+
+                        ItemMaker.giveItemToPlayer(player, restItem, 4);
+                        ItemMaker.giveItemToPlayer(player, leaveItem, 5);
+                        ItemMaker.giveItemToPlayer(player, lastCpItem, 6);
+                    }
+                } else {
+                    if (ParkourSessionManager.isInSession(player.getUniqueId())) {
+                        player.sendMessage("Finished parkour in: " + ParkourSessionManager.getTime(player.getUniqueId()));
+                        ParkourSessionManager.endSession(player.getUniqueId());
+                    }
+                }
             }
         }
     }

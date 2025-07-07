@@ -5,6 +5,8 @@
 # This config supports PlaceholderAPI and MiniMessage. Custom placeholders
 # are written BEFORE the field where they can be used.
 #
+# NOTE: PlaceholderAPI is not supported in all settings at the moment.
+#
 # License: MIT License
 #          Copyright (c) 2025 Crumb Network
 #          See LICENSE file or https://opensource.org/licenses/MIT for details.
@@ -13,13 +15,57 @@
 
 formatting:
   # %parkour_name% -> The name of the parkour
+  start-plate: "<green>⚑</green> <white>%parkour_name%</white>"
+  end-plate: "<red>⚑</red> <white>%parkour_name%</white>"
   # %checkpoint% -> The number of the checkpoint
   # %checkpoint_total% -> The total number of checkpoints (excluding start and end)
-  start-plate-format: <green>⚑</green> <white>%parkour_name%</white>
-  end-plate-format: <red>⚑</red> <white>%parkour_name%</white>
-  checkpoint-plate-format:
+  checkpoint-plate:
 
-  start-parkour-message:
-  end-parkour-message:
-  reset-parkour-message:
-  cancel-parkour-message:
+  # %m% -> Minutes
+  # %s% -> Seconds
+  # %ms% -> Milliseconds
+  # %cp% -> Current amount of passed checkpoints
+  # %cp-max% -> Amount of checkpoints in the course
+  timer: "<color:#7ae0ff>%m%:%s%:%ms%</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%cp%</color></color><color:#b8b8b8>/%cp-max%</color> <green>⚑</green>"
+
+  # %parkour_name% -> The name of the parkour
+  # %player_name% -> The name of the player
+  start-message:
+  cancel-message:
+  # %timer% -> The current timer (formatted previously)
+  end-message:
+  reset-message:
+  # %checkpoint% -> The number of the checkpoint
+  tp-message:
+  checkpoint-message:
+
+  # The action bar will be displayed while a player is doing a parkour.
+  # %parkour_name% -> The name of the parkour
+  # %player_name% -> The name of the player
+  # %timer% -> The current timer (formatted previously)
+  # %checkpoint% -> The number of the checkpoint
+  # %checkpoint_total% -> The total number of checkpoints (excluding start and end)
+  action-bar:
+
+  leaderboard:
+    # %parkour_name% -> The name of the parkour
+    title:
+
+    maximum-displayed: 10
+    # The personal best will displayed below the leaderboard
+    personal-best-enabled: true
+
+    # %position% -> The score position on the leaderboard (does not include #)
+    # %player_name% -> The name of the player
+    # %timer% -> The completion timer (formatted previously)
+    default-line-style: "#%position% - %player%: %time_s%"
+    personal-best-style: ""
+
+    empty-line-style: ""
+
+    # ADVANCED - This setting will overwrite the default-line setting for a specific line (keep the line empty if you don't want to change the line.)
+    lines:
+      -
+      -
+      -
+
