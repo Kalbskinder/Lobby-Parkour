@@ -7,10 +7,7 @@ import net.crumb.lobbyParkour.guis.MainMenu;
 import net.crumb.lobbyParkour.guis.MapListMenu;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
 import net.crumb.lobbyParkour.guis.ParkourStartPlateGUI;
-import net.crumb.lobbyParkour.utils.ItemMaker;
-import net.crumb.lobbyParkour.utils.MMUtils;
-import net.crumb.lobbyParkour.utils.MessageType;
-import net.crumb.lobbyParkour.utils.PressurePlates;
+import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -28,14 +25,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class InventoryClickListener implements Listener {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
+    private static final TextFormatter textFormatter = new TextFormatter();
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -107,9 +102,15 @@ public class InventoryClickListener implements Listener {
                             }
                         }
 
+
+                        Map<String, String> placeholders = Map.of(
+                                "parkour_name", name
+                        );
+                        Component startText = textFormatter.formatString(ConfigManager.getFormat().getStartPlate(), placeholders);
+
                         Location textDisplayLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
                         TextDisplay display = loc.getWorld().spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
-                            textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>" + name));
+                            textDisplay.text(startText);
                             textDisplay.setBillboard(Display.Billboard.CENTER);
                         });
 
@@ -134,9 +135,14 @@ public class InventoryClickListener implements Listener {
                             }
                         }
 
+                        Map<String, String> placeholders = Map.of(
+                                "parkour_name", name
+                        );
+                        Component endText = textFormatter.formatString(ConfigManager.getFormat().getEndPlate(), placeholders);
+
                         Location textDisplayLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
                         TextDisplay display = loc.getWorld().spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
-                            textDisplay.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>" + name));
+                            textDisplay.text(endText);
                             textDisplay.setBillboard(Display.Billboard.CENTER);
                         });
 
