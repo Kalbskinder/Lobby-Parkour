@@ -65,13 +65,24 @@ public class RenameItemListener implements Listener {
             }
 
             query.renameParkour(oldName, itemName);
-            UUID entityUUID = query.getStartEntityUuid(itemName);
+
+            UUID startEntityUuid = query.getStartEntityUuid(itemName);
             Location startLocation = query.getStartLocation(itemName);
-            World world = startLocation.getWorld();
-            Entity entity = world.getEntity(entityUUID);
-            TextDisplay textDisplay = (entity instanceof TextDisplay) ? (TextDisplay) entity : null;
-            assert textDisplay != null;
-            textDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
+            World startLocationWorld = startLocation.getWorld();
+            Entity startEntity = startLocationWorld.getEntity(startEntityUuid);
+            TextDisplay startTextDisplay = (startEntity instanceof TextDisplay) ? (TextDisplay) startEntity : null;
+            assert startTextDisplay != null;
+            startTextDisplay.text(MiniMessage.miniMessage().deserialize("<green>⚑</green> <white>"+itemName));
+
+
+            UUID endEntityUuid = query.getEndEntityUuid(itemName);
+            Location endLocation = query.getEndLocation(itemName);
+            World endLocationWorld = endLocation.getWorld();
+            Entity endEntity = endLocationWorld.getEntity(endEntityUuid);
+            TextDisplay endTextDisplay = (endEntity instanceof TextDisplay) ? (TextDisplay) endEntity : null;
+            assert endTextDisplay != null;
+            endTextDisplay.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>"+itemName));
+
             MMUtils.sendMessage(player, "The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!", MessageType.INFO);
         } catch (SQLException ex) {
             ex.printStackTrace();

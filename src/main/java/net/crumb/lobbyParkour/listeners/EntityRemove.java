@@ -53,8 +53,8 @@ public class EntityRemove implements Listener {
         try {
             ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
             Query query = new Query(database.getConnection());
-            String mapName = query.getMapNameByStartUuid(uuid);
 
+            String mapName = query.getMapNameByStartUuid(uuid);
             if (mapName != null) {
                 Location loc = query.getStartLocation(mapName);
                 World world = loc.getWorld();
@@ -64,6 +64,18 @@ public class EntityRemove implements Listener {
                     textDisplay.setBillboard(Display.Billboard.CENTER);
                 });
                 query.updateStartEntityUuid(mapName, display.getUniqueId());
+            }
+
+            String mapName2 = query.getMapNameByEndUuid(uuid);
+            if (mapName2 != null) {
+                Location loc = query.getEndLocation(mapName2);
+                World world = loc.getWorld();
+                Location textDisplayLocation = new Location(world, loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
+                TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
+                    textDisplay.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>" + mapName2));
+                    textDisplay.setBillboard(Display.Billboard.CENTER);
+                });
+                query.updateEndEntityUuid(mapName2, display.getUniqueId());
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

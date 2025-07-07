@@ -65,13 +65,14 @@ public class InventoryClickListener implements Listener {
         String menuTitle = PlainTextComponentSerializer.plainText().serialize(event.getView().title());
         menuTitle = menuTitle.trim();
 
-        if (menuTitle.equals("Lobby Parkour")) {
+        if (menuTitle.equals("ʟᴏʙʙʏ ᴘᴀʀᴋᴏᴜʀ")) {
             event.setCancelled(true);
 
 
             if (displayName.equals("+ Create a new parkour")) {
                 player.getInventory().clear(0);
                 player.getOpenInventory().close();
+                MMUtils.sendMessage(player, "Please place the start of your parkour. <gray>(1/2)</gray>", MessageType.INFO);
                 ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Parkour Start", Arrays.asList("<gray>Place this where you want", "<gray>your parkour to start.")), 0);
             }   player.getInventory().setHeldItemSlot(0);
 
@@ -113,6 +114,33 @@ public class InventoryClickListener implements Listener {
                         });
 
                         query.updateStartEntityUuid(name, display.getUniqueId());
+                    }
+
+                    List<Object[]> ends = query.getAllParkourEnds();
+
+                    for (Object[] data : ends) {
+                        String name = (String) data[0];
+                        Location loc = (Location) data[1];
+                        Material mat = (Material) data[2];
+
+                        loc.getBlock().setType(mat);
+
+                        UUID oldUuid = query.getEndEntityUuid(name);
+                        if (oldUuid != null) {
+                            Entity oldEntity = loc.getWorld().getEntity(oldUuid);
+                            if (oldEntity instanceof TextDisplay) {
+                                EntityRemove.suppress(oldUuid);
+                                oldEntity.remove();
+                            }
+                        }
+
+                        Location textDisplayLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
+                        TextDisplay display = loc.getWorld().spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
+                            textDisplay.text(MiniMessage.miniMessage().deserialize("<red>⚑</red> <white>" + name));
+                            textDisplay.setBillboard(Display.Billboard.CENTER);
+                        });
+
+                        query.updateEndEntityUuid(name, display.getUniqueId());
                     }
 
                     MMUtils.sendMessage(player, "Parkours reloaded successfully!", MessageType.INFO);
@@ -164,15 +192,25 @@ public class InventoryClickListener implements Listener {
                     Component loreLine = event.getView().getItem(10).getItemMeta().lore().get(1);
                     String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
 
-                    Location loc = query.getStartLocation(name);
-                    loc.getBlock().setType(Material.AIR);
+                    Location startLocation = query.getStartLocation(name);
+                    startLocation.getBlock().setType(Material.AIR);
 
-                    UUID entityUUID = query.getStartEntityUuid(name);
-                    World world = loc.getWorld();
-                    EntityRemove.suppress(entityUUID);
-                    Entity entity = world.getEntity(entityUUID);
-                    assert entity != null;
-                    entity.remove();
+                    UUID startEntityUuid = query.getStartEntityUuid(name);
+                    World startLocationWorld = startLocation.getWorld();
+                    EntityRemove.suppress(startEntityUuid);
+                    Entity startEntity = startLocationWorld.getEntity(startEntityUuid);
+                    assert startEntity != null;
+                    startEntity.remove();
+
+                    Location endLocation = query.getEndLocation(name);
+                    endLocation.getBlock().setType(Material.AIR);
+
+                    UUID endEntityUuid = query.getEndEntityUuid(name);
+                    World endLocationWorld = endLocation.getWorld();
+                    EntityRemove.suppress(endEntityUuid);
+                    Entity endEntity = endLocationWorld.getEntity(endEntityUuid);
+                    assert endEntity != null;
+                    endEntity.remove();
 
                     query.deleteParkour(name);
 
