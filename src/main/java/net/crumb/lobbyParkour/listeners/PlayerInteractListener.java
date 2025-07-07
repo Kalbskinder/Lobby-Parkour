@@ -5,8 +5,10 @@ import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
 import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.PressurePlates;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,6 +17,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import static net.crumb.lobbyParkour.utils.PressurePlates.isPressurePlate;
 
@@ -24,7 +28,8 @@ public class PlayerInteractListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (player.isSneaking() && event.getAction() == Action.RIGHT_CLICK_BLOCK && player.hasPermission("lpk.admin")) {
+
+        if (player.isSneaking() && event.getAction() == Action.RIGHT_CLICK_BLOCK && player.hasPermission("lpk.admin") && PressurePlates.isPressurePlate(event.getClickedBlock().getType())) {
             Block block = event.getClickedBlock();
             if (block == null) return;
             Location location = block.getLocation();
@@ -34,7 +39,19 @@ public class PlayerInteractListener implements Listener {
             try {
                 ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
                 Query query = new Query(database.getConnection());
-                parkourName = query.getMapnameByPkSpawn(location);
+
+                List<Object[]> pkStarts = query.getAllParkourStarts();
+                boolean isPkStart = pkStarts.stream().anyMatch(entry -> (entry[1]).equals(location));
+
+                List<Object[]> pkEnds = query.getAllParkourEnds();
+                boolean isPkEnd = pkEnds.stream().anyMatch(entry -> (entry[1]).equals(location));
+
+                if (isPkStart) {
+                    parkourName = query.getMapnameByPkSpawn(location);
+                } else if (isPkEnd) {
+                    parkourName = query.getMapnameByPkEnd(location);
+                }
+
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -42,6 +59,7 @@ public class PlayerInteractListener implements Listener {
             if (parkourName.isEmpty()) return;
             MapManageMenu.openMenu(player, parkourName);
         }
+
         if (event.getAction() == Action.PHYSICAL) {
             Block block = event.getClickedBlock();
             if (block != null && isPressurePlate(block.getType())) {

@@ -6,6 +6,7 @@ import org.bukkit.World;
 
 public class LocationHelper {
     public static String locationToString(Location loc) {
+        if (loc == null) return "null";
         return loc.getWorld().getName() + "," +
                loc.getX() + "," +
                loc.getY() + "," +

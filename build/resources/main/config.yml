@@ -1,0 +1,25 @@
+# ==============================================================================
+#
+#                           LOBBY PARKOUR - BY CRUMB
+#
+# This config supports PlaceholderAPI and MiniMessage. Custom placeholders
+# are written BEFORE the field where they can be used.
+#
+# License: MIT License
+#          Copyright (c) 2025 Crumb Network
+#          See LICENSE file or https://opensource.org/licenses/MIT for details.
+#
+# ==============================================================================
+
+formatting:
+  # %parkour_name% -> The name of the parkour
+  # %checkpoint% -> The number of the checkpoint
+  # %checkpoint_total% -> The total number of checkpoints (excluding start and end)
+  start-plate-format: <green>⚑</green> <white>%parkour_name%</white>
+  end-plate-format: <red>⚑</red> <white>%parkour_name%</white>
+  checkpoint-plate-format:
+
+  start-parkour-message:
+  end-parkour-message:
+  reset-parkour-message:
+  cancel-parkour-message:
