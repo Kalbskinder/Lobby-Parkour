@@ -4,6 +4,7 @@ import net.crumb.lobbyParkour.commands.BaseCommand;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.listeners.*;
 import net.crumb.lobbyParkour.utils.ConfigManager;
+import net.crumb.lobbyParkour.utils.ItemActionHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,6 +37,7 @@ public final class LobbyParkour extends JavaPlugin {
         pm.registerEvents(new RenameItemListener(), this);
         pm.registerEvents(new EntityRemove(), this);
         pm.registerEvents(new PlayerInteractListener(), this);
+        pm.registerEvents(new ItemActionHandler(), this);
     }
 
     @Override
