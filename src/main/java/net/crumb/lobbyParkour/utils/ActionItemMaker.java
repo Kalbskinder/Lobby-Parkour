@@ -52,14 +52,14 @@ public class ActionItemMaker {
 
         // Set display name
         if (itemName != null && !itemName.trim().isEmpty()) {
-            meta.displayName(mm.deserialize(itemName));
+            meta.displayName(mm.deserialize("<!italic>" + itemName));
         }
 
         // Set lore
         if (lore != null && !lore.isEmpty()) {
             List<Component> loreComponents = lore.stream()
                     .filter(Objects::nonNull)
-                    .map(mm::deserialize)
+                    .map(line -> mm.deserialize("<!italic>" + line))
                     .collect(Collectors.toList());
 
             meta.lore(loreComponents);

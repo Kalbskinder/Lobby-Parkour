@@ -24,17 +24,15 @@ formatting:
   # %m% -> Minutes
   # %s% -> Seconds
   # %ms% -> Milliseconds
-  # %cp% -> Current amount of passed checkpoints
-  # %cp-max% -> Amount of checkpoints in the course
-  timer: "<color:#7ae0ff>%m%:%s%:%ms%</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%cp%</color></color><color:#b8b8b8>/%cp-max%</color> <green>⚑</green>"
+  timer: "%m%:%s%:%ms%"
 
   # %parkour_name% -> The name of the parkour
   # %player_name% -> The name of the player
-  start-message:
-  cancel-message:
+  start-message: "<green>%player_name% started playing %parkour_name%!"
+  cancel-message: "<red>%player_name% canceled the parkour %parkour_name%!"
   # %timer% -> The current timer (formatted previously)
-  end-message:
-  reset-message:
+  end-message: "<green>%player_name% ended the parkour %parkour_name% with a time of <yellow>%timer%<green>!"
+  reset-message: "<green>%player_name% reset the parkour %parkour_name% with a time of <yellow>%timer%<green>!"
   # %checkpoint% -> The number of the checkpoint
   tp-message:
   checkpoint-message:
@@ -45,14 +43,14 @@ formatting:
   # %timer% -> The current timer (formatted previously)
   # %checkpoint% -> The number of the checkpoint
   # %checkpoint_total% -> The total number of checkpoints (excluding start and end)
-  action-bar:
+  action-bar: "<color:#7ae0ff></color>%timer%<color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%checkpoint%</color></color><color:#b8b8b8>/%checkpoint_total%</color> <green>⚑</green>"
 
   leaderboard:
     # %parkour_name% -> The name of the parkour
     title:
 
     maximum-displayed: 10
-    # The personal best will displayed below the leaderboard
+    # The personal best will be displayed below the leaderboard
     personal-best-enabled: true
 
     # %position% -> The score position on the leaderboard (does not include #)

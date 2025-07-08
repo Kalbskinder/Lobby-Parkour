@@ -1,35 +1,42 @@
 package net.crumb.lobbyParkour.systems;
 
 import net.crumb.lobbyParkour.LobbyParkour;
+import net.crumb.lobbyParkour.utils.ConfigManager;
+import net.crumb.lobbyParkour.utils.TextFormatter;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Map;
+
 public class ParkourTimer {
     private static boolean looping = false;
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
-    private static final String startMessage =  plugin.getConfig().getString("formatting.timer", "<color:#7ae0ff>%m%:%s%:%ms%</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%cp%</color></color><color:#b8b8b8>/%cp-max%</color> <green>⚑</green>");
+    private static final String actionbar = ConfigManager.getFormat().getActionBar()
+            .replace("%timer%", ConfigManager.getFormat().getTimer());
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private static final TextFormatter textFormatter = new TextFormatter();
 
     public static boolean isLooping() {
         return looping;
     }
 
-    private static String formatTimer(float time) {
+    public static String formatTimer(float time, String message) {
         int totalMs = (int) (time * 1000);
         int minutes = (totalMs / 1000) / 60;
         int seconds = (totalMs / 1000) % 60;
         int millis = totalMs % 1000;
 
-        return startMessage
+        return message
                 .replace("%m%", String.format("%02d", minutes))
                 .replace("%s%", String.format("%02d", seconds))
                 .replace("%ms%", String.format("%02d", millis))
 
                 // TODO: Replace these with the real checkpoints count
-                .replace("%cp%", "0")
-                .replace("%cp-max%", "0");
+                .replace("%checkpoint%", "0")
+                .replace("%checkpoint_total%", "0");
     }
 
     public static void setLooping(boolean looping) {
@@ -56,8 +63,13 @@ public class ParkourTimer {
                     // Display actionbar
                     Player player = Bukkit.getPlayer(uuid);
                     if (player != null && player.isOnline()) {
-                        String formattedTime = formatTimer(session.getTime());
-                        player.sendActionBar(miniMessage.deserialize(formattedTime));
+                        String formattedTime = formatTimer(session.getTime(), actionbar);
+                        Map<String, String> placeholders = Map.of(
+                                "parkour_name", session.getParkourName(),
+                                "player_name", player.getName()
+                        );
+                        Component finalActionbar = textFormatter.formatString(formattedTime, player, placeholders);
+                        player.sendActionBar(finalActionbar);
                     }
                 });
             }
