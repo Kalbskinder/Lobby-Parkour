@@ -27,7 +27,7 @@ public class ParkourTimer {
         int totalMs = (int) (time * 1000);
         int minutes = (totalMs / 1000) / 60;
         int seconds = (totalMs / 1000) % 60;
-        int millis = totalMs % 1000;
+        int millis = totalMs % 1000 / 10;
 
         return message
                 .replace("%m%", String.format("%02d", minutes))
