@@ -4,6 +4,7 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.ItemMaker;
+import net.crumb.lobbyParkour.utils.PlateType;
 import net.crumb.lobbyParkour.utils.PressurePlates;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -20,11 +21,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParkourStartPlateGUI {
+public class EditPlateTypeMenu {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
-    public static void openMenu(Player player, String mapName) {
+    public static void openMenu(Player player, String mapName, PlateType menuType) {
         if (!player.hasPermission("lpk.admin")) return;
         Inventory gui = Bukkit.createInventory(null, 9 * 5, miniMessage.deserialize("<bold><gradient:#369e36:#2bbf11>Change Type<reset>"));
         List<String> emptyLore = new ArrayList<>();
@@ -33,10 +34,14 @@ public class ParkourStartPlateGUI {
         ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
         ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
 
+        // Make secret info item
         ItemStack secretItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
         ItemMeta secretMeta = secretItem.getItemMeta();
-        secretMeta.lore(List.of(Component.text(mapName)));
-        secretMeta.setHideTooltip(true);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(mapName));
+        lore.add(Component.text(menuType.name()));
+        secretMeta.lore(lore);
+        // secretMeta.setHideTooltip(true);
 
         secretItem.setItemMeta(secretMeta);
 
@@ -45,7 +50,12 @@ public class ParkourStartPlateGUI {
         try {
             ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
             Query query = new Query(database.getConnection());
-            currentType = query.getStartType(mapName);
+
+            if (menuType == PlateType.START) {
+                currentType = query.getStartType(mapName);
+            } else if (menuType == PlateType.END) {
+                currentType = query.getEndType(mapName);
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -95,9 +105,8 @@ public class ParkourStartPlateGUI {
         }
 
         gui.setItem(0, secretItem);
-
-        gui.setItem(40, backArrow);
-        gui.setItem(41, closeButton);
+        gui.setItem(39, backArrow);
+        gui.setItem(40, closeButton);
 
 
         player.openInventory(gui);

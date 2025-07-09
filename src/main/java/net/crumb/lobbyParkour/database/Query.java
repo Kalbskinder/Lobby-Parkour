@@ -82,6 +82,28 @@ public class Query {
         return null;
     }
 
+    public ItemStack getEndType(String mapName) throws SQLException {
+        String sql = "SELECT end_cp_material FROM parkours WHERE pk_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, mapName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String materialName = rs.getString("end_cp_material");
+                    if (materialName.startsWith("minecraft:")) {
+                        materialName = materialName.substring(10);
+                    }
+
+                    Material material = Material.matchMaterial(materialName.toUpperCase());
+                    if (material != null) {
+                        return new ItemStack(material);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
     public UUID getStartEntityUuid(String mapName) throws SQLException {
         String sql = "SELECT start_cp_entity_uuid FROM parkours WHERE pk_name = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -157,6 +179,15 @@ public class Query {
 
     public void updateStartType(String mapName, String newType) throws SQLException {
         String sql = "UPDATE parkours SET start_cp_material = ? WHERE pk_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, newType);
+            stmt.setString(2, mapName);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void updateEndType(String mapName, String newType) throws SQLException {
+        String sql = "UPDATE parkours SET end_cp_material = ? WHERE pk_name = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, newType);
             stmt.setString(2, mapName);
