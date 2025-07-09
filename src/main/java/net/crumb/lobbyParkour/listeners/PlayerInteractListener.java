@@ -3,15 +3,13 @@ package net.crumb.lobbyParkour.listeners;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
+import net.crumb.lobbyParkour.guis.EditPlateTypeMenu;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
-import net.crumb.lobbyParkour.systems.ParkourSession;
 import net.crumb.lobbyParkour.systems.ParkourSessionManager;
 import net.crumb.lobbyParkour.systems.ParkourTimer;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -54,17 +52,21 @@ public class PlayerInteractListener implements Listener {
                 boolean isPkEnd = pkEnds.stream().anyMatch(entry -> (entry[1]).equals(location));
 
                 if (isPkStart) {
+                    // Open the manage menu of the parkour
                     parkourName = query.getMapnameByPkSpawn(location);
+                    if (parkourName.isEmpty()) return;
+                    MapManageMenu.openMenu(player, parkourName);
                 } else if (isPkEnd) {
+                    // Open the edit menu for the end plate
                     parkourName = query.getMapnameByPkEnd(location);
+                    if (parkourName == null) return;
+                    EditPlateTypeMenu.openMenu(player, parkourName, PlateType.END);
+                    return;
                 }
 
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
-
-            if (parkourName.isEmpty()) return;
-            MapManageMenu.openMenu(player, parkourName);
         }
 
         if (event.getAction() == Action.PHYSICAL) {
@@ -162,10 +164,9 @@ public class PlayerInteractListener implements Listener {
                         player.sendMessage(startMessage);
                     }
                 } else {
-                    String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getTime(), ConfigManager.getFormat().getTimer());
-
                     // Player finished the parkour
                     if (ParkourSessionManager.isInSession(player.getUniqueId())) {
+                        String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getTime(), ConfigManager.getFormat().getTimer());
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
                         player.getInventory().clear();
 

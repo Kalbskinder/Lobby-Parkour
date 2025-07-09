@@ -28,14 +28,14 @@ formatting:
 
   # %parkour_name% -> The name of the parkour
   # %player_name% -> The name of the player
-  start-message: "<green>%player_name% started playing %parkour_name%!"
-  cancel-message: "<red>%player_name% canceled the parkour %parkour_name%!"
+  start-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have started <white>%parkour_name%</white>. Good Luck!</color>"
+  cancel-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have cancelled your run. Retry next time!</color>"
   # %timer% -> The current timer (formatted previously)
-  end-message: "<green>%player_name% ended the parkour %parkour_name% with a time of <yellow>%timer%<green>!"
-  reset-message: "<green>%player_name% reset the parkour %parkour_name% with a time of <yellow>%timer%<green>!"
+  end-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have finished the parkour in <white>%timer%</white>. <color:#ffc157><b>ɢɢ!</b></color></color>"
+  reset-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have reset your run for <white>%parkour_name%</white>. Good luck!</color>"
   # %checkpoint% -> The number of the checkpoint
-  tp-message:
-  checkpoint-message:
+  tp-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have been teleported to your last checkpoint.</color>"
+  checkpoint-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have reached <white>Checkpoint #%checkpoint%</white> in <white>%timer%</white>.</color>"
 
   # The action bar will be displayed while a player is doing a parkour.
   # %parkour_name% -> The name of the parkour
@@ -43,15 +43,22 @@ formatting:
   # %timer% -> The current timer (formatted previously)
   # %checkpoint% -> The number of the checkpoint
   # %checkpoint_total% -> The total number of checkpoints (excluding start and end)
-  action-bar: "<color:#7ae0ff></color>%timer%<color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%checkpoint%</color></color><color:#b8b8b8>/%checkpoint_total%</color> <green>⚑</green>"
+  action-bar: "<color:#7ae0ff>%timer%</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>0</color></color><color:#b8b8b8>/10</color> <green>⚑</green>"
 
   leaderboard:
     # %parkour_name% -> The name of the parkour
-    title:
+    title: "<red>%parkour_name%"
+
+    # The display item will be shown above the title if enabled. (It will rotate like a dropped item.)
+    display-item:
+      enabled: true
+      item: "minecraft:stone"
+      enchant-glint: true
+      spin-enabled: true
 
     maximum-displayed: 10
     # The personal best will be displayed below the leaderboard
-    personal-best-enabled: true
+    personal-best-enabled: false
 
     # %position% -> The score position on the leaderboard (does not include #)
     # %player_name% -> The name of the player
@@ -59,7 +66,7 @@ formatting:
     default-line-style: "#%position% - %player%: %time_s%"
     personal-best-style: ""
 
-    empty-line-style: ""
+    empty-line-style: "empty"
 
     # ADVANCED - This setting will overwrite the default-line setting for a specific line (keep the line empty if you don't want to change the line.)
     lines:
@@ -67,3 +74,6 @@ formatting:
       -
       -
 
+settings:
+  leaderboard-update: 1
+  parkour-timeout:
