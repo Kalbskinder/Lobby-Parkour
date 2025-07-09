@@ -2,6 +2,8 @@ package net.crumb.lobbyParkour.commands;
 
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.guis.MainMenu;
+import net.crumb.lobbyParkour.systems.LeaderboardManager;
+import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.MMUtils;
 import net.crumb.lobbyParkour.utils.MessageType;
 import net.crumb.lobbyParkour.utils.Prefixes;
@@ -11,9 +13,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+
 public class BaseCommand implements CommandExecutor {
     private final LobbyParkour plugin;
     private static final String prefix = Prefixes.getPrefix();
+    private static final LeaderboardUpdater updater = new LeaderboardUpdater();
 
     public BaseCommand(LobbyParkour plugin) {
         this.plugin = plugin;
@@ -42,7 +47,19 @@ public class BaseCommand implements CommandExecutor {
             case "help" -> {
 
             }
+            case "leaderboard" -> {
+                LeaderboardManager leaderboardManager = new LeaderboardManager();
+                String leaderboardName = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                leaderboardManager.spawnLeaderboard(player.getLocation(), leaderboardName);
+            }
+            case "cache" -> {
+                MMUtils.sendMessage(player, updater.getCache().toString(), MessageType.INFO);
 
+            }
+            case "test" -> {
+                String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+                MMUtils.sendMessage(player, message, MessageType.NONE);
+            }
             default -> {
                 MMUtils.sendMessage(player, "Unknown command! Do <white>/lpk help</white> to see the list of available commands.", MessageType.WARNING);
             }

@@ -256,6 +256,15 @@ public class InventoryClickListener implements Listener {
                 player.teleport(loc);
                 MMUtils.sendMessage(player, "You have been teleported to the start of <white>"+name+"</white>!", MessageType.INFO);
             }
+            if (displayName.equals("Place Leaderboard")) {
+                Component loreLine = event.getView().getItem(16).getItemMeta().lore().get(1);
+                String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                player.getInventory().clear(0);
+                player.getOpenInventory().close();
+                ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:book", 1, "<green>Place Leaderboard", Arrays.asList("<gray>Place this where you want", "<gray>your leaderboard to be.", "", "<gray>Parkour:", "<white>" + name)), 0);
+                player.getInventory().setHeldItemSlot(0);
+                MMUtils.sendMessage(player, "Please place the leaderboard for <white>" + name + "</white> anywhere you want!", MessageType.INFO);
+            }
         }
 
         if (menuTitle.equals("Change Type")) {

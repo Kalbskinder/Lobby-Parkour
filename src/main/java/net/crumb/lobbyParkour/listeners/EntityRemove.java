@@ -56,6 +56,8 @@ public class EntityRemove implements Listener {
         }
 
         try {
+            Map<String, Object> lineInfo;
+            TextDisplay display;
             ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
             Query query = new Query(database.getConnection());
 
@@ -70,7 +72,7 @@ public class EntityRemove implements Listener {
                 Location loc = query.getStartLocation(mapName);
                 World world = loc.getWorld();
                 Location textDisplayLocation = new Location(world, loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
-                TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
+                display = world.spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
                     textDisplay.text(startText);
                     textDisplay.setBillboard(Display.Billboard.CENTER);
                 });
@@ -87,11 +89,30 @@ public class EntityRemove implements Listener {
                 Location loc = query.getEndLocation(mapName2);
                 World world = loc.getWorld();
                 Location textDisplayLocation = new Location(world, loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
-                TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
+                display = world.spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
                     textDisplay.text(endText);
                     textDisplay.setBillboard(Display.Billboard.CENTER);
                 });
                 query.updateEndEntityUuid(mapName2, display.getUniqueId());
+            }
+
+            if ((lineInfo = query.getLeaderboardLineByUuid(uuid)) != null) {
+                Component text;
+                Location location = (Location)lineInfo.get("location");
+                int position = (Integer)lineInfo.get("position");
+                int leaderboardId = (Integer)lineInfo.get("leaderboard_id");
+                if (position == 0) {
+                    String parkourName = query.getParkourNameByLeaderboard(leaderboardId);
+                    Map<String, String> placeholders = Map.of("parkour_name", parkourName);
+                    text = textFormatter.formatString(ConfigManager.getFormat().getLeaderboard().getTitle(), placeholders);
+                } else {
+                    text = textFormatter.formatString(ConfigManager.getFormat().getLeaderboard().getEmptyLineStyle());
+                }
+                display = location.getWorld().spawn(location, TextDisplay.class, td -> {
+                    td.text(text);
+                    td.setBillboard(Display.Billboard.CENTER);
+                });
+                query.updateLeaderboardLineEntityUuid(display.getUniqueId());
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

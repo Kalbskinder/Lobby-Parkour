@@ -3,6 +3,7 @@ package net.crumb.lobbyParkour;
 import net.crumb.lobbyParkour.commands.BaseCommand;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.listeners.*;
+import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.ConfigManager;
 import net.crumb.lobbyParkour.utils.ItemActionHandler;
 import org.bukkit.Bukkit;
@@ -61,6 +62,12 @@ public final class LobbyParkour extends JavaPlugin {
             getLogger().severe("Failed to connect to the database! " + ex.getMessage());
             Bukkit.getPluginManager().disablePlugin(this);
         }
+
+        LeaderboardUpdater updater = new LeaderboardUpdater();
+        updater.updateCache();
+        updater.updateFormat();
+        updater.startSpinning();
+
         if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             getLogger().warning("Could not find PlaceholderAPI! ");
         }

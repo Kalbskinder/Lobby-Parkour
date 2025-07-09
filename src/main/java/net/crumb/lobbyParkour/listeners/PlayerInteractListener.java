@@ -54,9 +54,9 @@ public class PlayerInteractListener implements Listener {
                 boolean isPkEnd = pkEnds.stream().anyMatch(entry -> (entry[1]).equals(location));
 
                 if (isPkStart) {
-                    parkourName = query.getMapnameByPkSpawn(location);
+                    parkourName = query.getMapNameByPkSpawn(location);
                 } else if (isPkEnd) {
-                    parkourName = query.getMapnameByPkEnd(location);
+                    parkourName = query.getMapNameByPkEnd(location);
                 }
 
             } catch (SQLException ex) {
@@ -85,9 +85,9 @@ public class PlayerInteractListener implements Listener {
                     isPkEnd = pkEnds.stream().anyMatch(entry -> (entry[1]).equals(location));
 
                     if (isPkStart) {
-                        parkourName = query.getMapnameByPkSpawn(location);
+                        parkourName = query.getMapNameByPkSpawn(location);
                     } else if (isPkEnd) {
-                        parkourName = query.getMapnameByPkEnd(location);
+                        parkourName = query.getMapNameByPkEnd(location);
                     }
 
                 } catch (SQLException ex) {
