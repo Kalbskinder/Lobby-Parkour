@@ -111,6 +111,7 @@ public class PlayerInteractListener implements Listener {
 
                     if (!ParkourSessionManager.isInSession(player.getUniqueId())) {
                         ParkourSessionManager.startSession(player.getUniqueId(), parkourName);
+                        ParkourSessionManager.getSession(player.getUniqueId()).resetTime();
                         List<String> emptyLore = new ArrayList<>();
 
                         // Item action ids for right-click actions
@@ -118,7 +119,7 @@ public class PlayerInteractListener implements Listener {
                         String leavePkActionId = player.getUniqueId() + "leave-pk";
                         String lastCheckpointActionId = player.getUniqueId() + "last-checkpoint-pk";
 
-                        String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getTime(), ConfigManager.getFormat().getTimer());
+                        String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds(), ConfigManager.getFormat().getTimer());
 
                         ItemActionHandler.registerAction(resetPkActionId, p -> {
                             p.teleport(location);
@@ -172,7 +173,7 @@ public class PlayerInteractListener implements Listener {
                     if (ParkourSessionManager.isInSession(player.getUniqueId())) {
                         ParkourSession session = ParkourSessionManager.getSession(player.getUniqueId());
                         if (!session.getParkourName().equals(parkourName)) return;
-                        String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getTime(), ConfigManager.getFormat().getTimer());
+                        String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds(), ConfigManager.getFormat().getTimer());
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
                         player.getInventory().clear();
 

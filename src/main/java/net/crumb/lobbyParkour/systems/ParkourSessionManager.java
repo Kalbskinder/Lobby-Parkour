@@ -26,16 +26,4 @@ public class ParkourSessionManager {
     public static Map<UUID, ParkourSession> getSessions() {
         return sessions;
     }
-
-    public static void setTime(UUID uuid, float time) {
-        ParkourSession session = sessions.get(uuid);
-        if (session != null) {
-            session.setTime(time);
-        }
-    }
-
-    public static float getTime(UUID uuid) {
-        ParkourSession session = sessions.get(uuid);
-        return session != null ? session.getTime() : 0f;
-    }
 }

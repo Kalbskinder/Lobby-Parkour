@@ -27,7 +27,7 @@ public class ParkourTimer {
         int totalMs = (int) (time * 1000);
         int minutes = (totalMs / 1000) / 60;
         int seconds = (totalMs / 1000) % 60;
-        int millis = totalMs % 1000;
+        int millis = totalMs % 1000 / 10;
 
         return message
                 .replace("%m%", String.format("%02d", minutes))
@@ -57,13 +57,10 @@ public class ParkourTimer {
                 }
 
                 ParkourSessionManager.getSessions().forEach((uuid, session) -> {
-                    float currentTime = session.getTime();
-                    session.setTime(currentTime + 0.05f); // 1 Tick = 0.05 seconds
-
                     // Display actionbar
                     Player player = Bukkit.getPlayer(uuid);
                     if (player != null && player.isOnline()) {
-                        String formattedTime = formatTimer(session.getTime(), actionbar);
+                        String formattedTime = formatTimer(session.getElapsedSeconds(), actionbar);
                         Map<String, String> placeholders = Map.of(
                                 "parkour_name", session.getParkourName(),
                                 "player_name", player.getName()
