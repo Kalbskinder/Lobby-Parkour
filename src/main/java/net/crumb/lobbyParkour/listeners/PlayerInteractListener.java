@@ -5,6 +5,7 @@ import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.EditPlateTypeMenu;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
+import net.crumb.lobbyParkour.systems.ParkourSession;
 import net.crumb.lobbyParkour.systems.ParkourSessionManager;
 import net.crumb.lobbyParkour.systems.ParkourTimer;
 import net.crumb.lobbyParkour.utils.*;
@@ -104,8 +105,11 @@ public class PlayerInteractListener implements Listener {
                     ParkourTimer.start();
                     // If player is already doing parkour, reset the timer to 0s
                     if (ParkourSessionManager.isInSession(player.getUniqueId())) {
-                        ParkourSessionManager.setTime(player.getUniqueId(), 0f);
-                    } else {
+                        // Reset session
+                        ParkourSessionManager.endSession(player.getUniqueId());
+                    }
+
+                    if (!ParkourSessionManager.isInSession(player.getUniqueId())) {
                         ParkourSessionManager.startSession(player.getUniqueId(), parkourName);
                         List<String> emptyLore = new ArrayList<>();
 
@@ -166,6 +170,8 @@ public class PlayerInteractListener implements Listener {
                 } else {
                     // Player finished the parkour
                     if (ParkourSessionManager.isInSession(player.getUniqueId())) {
+                        ParkourSession session = ParkourSessionManager.getSession(player.getUniqueId());
+                        if (!session.getParkourName().equals(parkourName)) return;
                         String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getTime(), ConfigManager.getFormat().getTimer());
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
                         player.getInventory().clear();
