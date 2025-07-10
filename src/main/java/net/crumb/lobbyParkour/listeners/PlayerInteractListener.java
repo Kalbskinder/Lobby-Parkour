@@ -173,9 +173,19 @@ public class PlayerInteractListener implements Listener {
                     if (ParkourSessionManager.isInSession(player.getUniqueId())) {
                         ParkourSession session = ParkourSessionManager.getSession(player.getUniqueId());
                         if (!session.getParkourName().equals(parkourName)) return;
-                        String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds(), ConfigManager.getFormat().getTimer());
+                        float timerMillis = ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds();
+                        String timer = ParkourTimer.formatTimer(timerMillis, ConfigManager.getFormat().getTimer());
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
                         player.getInventory().clear();
+
+                        try {
+                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                            Query query = new Query(database.getConnection());
+                            int id = query.getParkourIdFromName(parkourName);
+                            query.saveTime(player.getUniqueId(), id, timerMillis);
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
 
                         // Send end message
                         Component endMessage = textFormatter.formatString(ConfigManager.getFormat().getEndMessage(), player, Map.of(

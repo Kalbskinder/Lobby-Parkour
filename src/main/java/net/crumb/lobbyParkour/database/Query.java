@@ -305,4 +305,30 @@ public class Query {
         return list;
     }
 
+    public Integer getParkourIdFromName(String parkourName) throws SQLException {
+        String sql = "SELECT id FROM parkours WHERE pk_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, parkourName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    return null;
+                }
+            }
+        }
+    }
+
+
+    public void saveTime(UUID uuid, int parkourId, float time) throws SQLException {
+        String sql = "INSERT INTO times (uuid, comp_time, parkour_id) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, uuid.toString());
+            stmt.setFloat(2, time);
+            stmt.setInt(3, parkourId);
+            stmt.executeUpdate();
+        }
+    }
+
+
 }
