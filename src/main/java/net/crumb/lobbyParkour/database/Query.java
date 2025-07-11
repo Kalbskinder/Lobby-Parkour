@@ -1,8 +1,11 @@
 package net.crumb.lobbyParkour.database;
 
 import net.crumb.lobbyParkour.utils.LocationHelper;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.ItemStack;
 
 import java.sql.*;
@@ -294,10 +297,11 @@ public class Query {
         return null;
     }
 
-    public void updateLeaderboardLineEntityUuid(UUID newUuid) throws SQLException {
-        String sql = "UPDATE leaderboard_lines SET entity_uuid = ?";
+    public void updateLeaderboardLineEntityUuid(UUID oldUuid, UUID newUuid) throws SQLException {
+        String sql = "UPDATE leaderboard_lines SET entity_uuid = ? WHERE entity_uuid = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, newUuid.toString());
+            stmt.setString(2, oldUuid.toString());
             stmt.executeUpdate();
         }
     }
@@ -312,4 +316,33 @@ public class Query {
         }
         return null;
     }
+
+    public void removeDisplayItems() throws SQLException {
+        String sql = "DELETE FROM leaderboard_lines WHERE position = -1";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        }
+    }
+
+    public Map<Location, UUID> getDisplayItemLocations() throws SQLException {
+        String sql = "SELECT location, uuid FROM leaderboard_lines WHERE position = -1";
+        Map<Location, UUID> result = new HashMap<>();
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String locString = rs.getString("location");
+                String uuidString = rs.getString("uuid");
+
+                Location location = LocationHelper.stringToLocation(locString);
+                UUID uuid = uuidString != null ? UUID.fromString(uuidString) : null;
+
+                if (location != null) {
+                    result.put(location, uuid);
+                }
+            }
+        }
+        return result;
+    }
+
 }

@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class BaseCommand implements CommandExecutor {
     private final LobbyParkour plugin;
     private static final String prefix = Prefixes.getPrefix();
-    private static final LeaderboardUpdater updater = new LeaderboardUpdater();
+    private static final LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
 
     public BaseCommand(LobbyParkour plugin) {
         this.plugin = plugin;

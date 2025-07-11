@@ -52,7 +52,6 @@ public final class LobbyParkour extends JavaPlugin {
         registerListeners();
 
         saveResource("config.yml", /* replace */ false);
-
         ConfigManager.loadConfig(getConfig());
 
         try {
@@ -61,17 +60,22 @@ public final class LobbyParkour extends JavaPlugin {
             ex.printStackTrace();
             getLogger().severe("Failed to connect to the database! " + ex.getMessage());
             Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
-
-        LeaderboardUpdater updater = new LeaderboardUpdater();
-        updater.updateCache();
-        updater.updateFormat();
-        updater.startSpinning();
 
         if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            getLogger().warning("Could not find PlaceholderAPI! ");
+            getLogger().warning("Could not find PlaceholderAPI!");
         }
+
+        // Delay the updater init to ensure everything is ready
+        Bukkit.getScheduler().runTask(this, () -> {
+            LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
+            updater.updateCache();
+            updater.updateFormat();
+            updater.startSpinning();
+        });
     }
+
 
     @Override
     public void onDisable() {

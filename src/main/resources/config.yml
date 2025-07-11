@@ -76,4 +76,6 @@ formatting:
 
 settings:
   leaderboard-update: 1
+  leaderboard-query-update: 60
   parkour-timeout:
+  allow-fly: false

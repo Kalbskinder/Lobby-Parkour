@@ -10,14 +10,26 @@ import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.ConfigManager;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import static org.bukkit.Bukkit.getLogger;
+
 public class LeaderboardUpdater {
+    private static final LeaderboardUpdater instance = new LeaderboardUpdater();
+    public static LeaderboardUpdater getInstance() {
+        return instance;
+    }
+
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
     private final Map<String, Object> format = new ConcurrentHashMap<>();
     private BukkitRunnable spinTask;
@@ -58,11 +70,10 @@ public class LeaderboardUpdater {
         format.put("display-item", displayItem.getItem());
         format.put("display-glint", displayItem.hasEnchantGlint());
         format.put("leaderboard-update", settings.getLeaderboardUpdateRate());
+        format.put("leaderboard-query-update", settings.getLeaderboardQueryRate());
     }
 
     public Map<String, Object> getCache() {
-        updateCache();
-        updateFormat();
         Map<String, Object> map = new HashMap<>();
         map.put("cache", cache);
         map.put("format", format);
@@ -77,7 +88,45 @@ public class LeaderboardUpdater {
         updateTask = new BukkitRunnable() {
             @Override
             public void run() {
-                // Implementation of update logic goes here
+                if ((boolean) format.get("display-enabled")) {
+                    Set<UUID> uuids = new HashSet<>((List<UUID>) cache.get("itemUUID"));
+                    if (!uuids.isEmpty()) {
+                        Material expectedMaterial = (Material) format.get("display-item");
+                        boolean glintEnabled = (boolean) format.get("display-glint");
+
+                        for (UUID uuid : uuids) {
+                            Entity entity = Bukkit.getEntity(uuid);
+                            if (!(entity instanceof ItemDisplay itemDisplay)) continue;
+
+                            if (entity.isDead()) {
+                                entity.remove(); // Extra safety
+                                continue;
+                            }
+
+                            ItemStack stack = itemDisplay.getItemStack();
+                            ItemMeta meta = stack.getItemMeta();
+
+                            // Remove entity if material doesn't match
+                            if (stack.getType() != expectedMaterial) {
+                                itemDisplay.remove();
+                                continue;
+                            }
+
+                            boolean hasGlint = meta.hasEnchant(Enchantment.UNBREAKING);
+
+                            if (glintEnabled && !hasGlint) {
+                                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                stack.setItemMeta(meta);
+                                itemDisplay.setItemStack(stack);
+                            } else if (!glintEnabled && hasGlint) {
+                                meta.removeEnchant(Enchantment.UNBREAKING);
+                                stack.setItemMeta(meta);
+                                itemDisplay.setItemStack(stack);
+                            }
+                        }
+                    }
+                }
             }
         };
 
@@ -102,8 +151,9 @@ public class LeaderboardUpdater {
 
             @Override
             public void run() {
-                List<UUID> uuids = (List<UUID>) cache.get("itemUUID");
-                if (uuids == null || uuids.isEmpty()) return;
+                Set<UUID> uuids = new HashSet<>((List<UUID>) cache.get("itemUUID"));
+
+                if (uuids.isEmpty()) return;
 
                 angle += Math.toRadians(3.6);
                 if (angle >= Math.PI * 2) {

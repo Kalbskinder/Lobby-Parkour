@@ -24,9 +24,11 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class LeaderboardManager {
+
+
     private static final TextFormatter textFormatter = new TextFormatter();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
-    private static final LeaderboardUpdater updater = new LeaderboardUpdater();
+    private static final LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
 
     public void spawnLeaderboard(Location location, String parkourName) {
         try {
@@ -37,6 +39,7 @@ public class LeaderboardManager {
             int leaderboardId = query.createLeaderboard(parkourId);
 
             location = location.toCenterLocation();
+            location = location.setRotation(0,0);
 
             var leaderboardFormat = ConfigManager.getFormat().getLeaderboard();
             var displayItemConfig = leaderboardFormat.getDisplayItem();

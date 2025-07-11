@@ -141,6 +141,10 @@ public class ConfigManager {
         public int getLeaderboardUpdateRate() {
             return config.getInt("setings.leaderboard-update", 1);
         }
+
+        public int getLeaderboardQueryRate() {
+            return config.getInt("setings.leaderboard-query-update", 1);
+        }
     }
 }
 
