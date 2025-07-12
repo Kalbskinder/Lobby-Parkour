@@ -19,7 +19,7 @@ formatting:
   end-plate: "<red>⚑</red> <white>%parkour_name%</white>"
   # %checkpoint% -> The number of the checkpoint
   # %checkpoint_total% -> The total number of checkpoints (excluding start and end)
-  checkpoint-plate:
+  checkpoint-plate: "<blue>⚑</blue> <gray>(%checkpoint%/%checkpoint_total%) <white>%parkour_name%</white>"
 
   # %m% -> Minutes
   # %s% -> Seconds

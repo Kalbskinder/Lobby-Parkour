@@ -330,5 +330,64 @@ public class Query {
         }
     }
 
+    /*
+        Checkpoints
+     */
+
+    public void createCheckpoint(int parkourId, int cp_index, Location location, String material, UUID entityUUID) throws SQLException {
+        String sql = "INSERT INTO checkpoints (parkour_id, cp_index, location, material, entity_uuid) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            stmt.setInt(2, cp_index);
+            stmt.setString(3, LocationHelper.locationToString(location));
+            stmt.setString(4, material);
+            stmt.setString(5, entityUUID.toString());
+            stmt.executeUpdate();
+        }
+    }
+
+    public int getMaxCheckpointIndex(int parkourId) throws SQLException {
+        String sql = "SELECT MAX(cp_index) AS max_index FROM checkpoints WHERE parkour_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("max_index");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public List<Object[]> getCheckpoints(int parkourId) throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT id, cp_index, location, material, entity_uuid FROM checkpoints WHERE parkour_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int cp_index = rs.getInt("cp_index");
+                String location = rs.getString("location");
+                String material = rs.getString("material");
+                UUID entityUUID = UUID.fromString(rs.getString("entity_uuid"));
+                list.add(new Object[]{rs.getInt("id"), cp_index, location, material, entityUUID});
+            }
+        }
+        return list;
+    }
+
+    public Location getCheckpointLocation(int parkourId, int checkpointIndex) throws SQLException {
+        String sql = "SELECT location FROM checkpoints WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            stmt.setInt(2, checkpointIndex);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return LocationHelper.stringToLocation(rs.getString("location"));
+                }
+            }
+        }
+        return null;
+    }
 
 }
