@@ -406,20 +406,6 @@ public class Query {
         return null;
     }
 
-    public String getMapIdOfCheckpoint(int checkpointId, int checkpointIndex) throws SQLException {
-        String sql = "SELECT parkour_id FROM checkpoints WHERE id = ? AND cp_index = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, checkpointId);
-            stmt.setInt(2, checkpointIndex);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("parkour_id");
-                }
-            }
-        }
-        return null;
-    }
-
     public boolean isCheckpoint(int parkourId) throws SQLException {
         String sql = "SELECT parkour_id, cp_index, location, material FROM checkpoints WHERE parkour_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -431,6 +417,16 @@ public class Query {
             }
         }
         return false;
+    }
+
+    public boolean isCheckpoint(Location location) throws SQLException {
+        String sql = "SELECT 1 FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, LocationHelper.locationToString(location));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
     }
 
 }
