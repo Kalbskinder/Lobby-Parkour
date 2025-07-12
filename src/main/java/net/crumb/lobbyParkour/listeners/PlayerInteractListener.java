@@ -19,10 +19,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static net.crumb.lobbyParkour.utils.PressurePlates.isPressurePlate;
 
@@ -52,6 +55,33 @@ public class PlayerInteractListener implements Listener {
                 List<Object[]> pkEnds = query.getAllParkourEnds();
                 boolean isPkEnd = pkEnds.stream().anyMatch(entry -> (entry[1]).equals(location));
 
+                // Check for checkpoints
+                boolean isPkCheckpoint = false;
+
+                if (!isPkStart && !isPkEnd) {
+                    List<Object[]> allPkCheckpoints = query.getCheckpoints();
+                    final Integer[] parkourId = {null};
+                    allPkCheckpoints.forEach(checkpoint -> {
+                        if (compareLocations(LocationHelper.stringToLocation((String) checkpoint[2]), location)) {
+                            parkourId[0] = (Integer) checkpoint[1];
+                        }
+                    });
+
+                    if (parkourId == null) {
+                        MMUtils.sendMessage(player, "Could not find parkour id of the checkpoint.", MessageType.ERROR);
+                        return;
+                    }
+
+                    List<Object[]> pkCheckpoints = query.getCheckpoints(parkourId[0]);
+                    if (pkCheckpoints.isEmpty()) {
+                        MMUtils.sendMessage(player, "No checkpoints found for parkour with id " + parkourId + ".", MessageType.ERROR);
+                        return;
+                    }
+
+                    isPkCheckpoint = query.isCheckpoint(parkourId[0]);
+                }
+
+                // Execute actions
                 if (isPkStart) {
                     // Open the manage menu of the parkour
                     parkourName = query.getMapnameByPkSpawn(location);
@@ -63,8 +93,10 @@ public class PlayerInteractListener implements Listener {
                     if (parkourName == null) return;
                     EditPlateTypeMenu.openMenu(player, parkourName, PlateType.END);
                     return;
+                } else if (isPkCheckpoint) {
+                    // Open the checkpoint manage menu
+                    player.sendMessage("Checkpoint!!!!");
                 }
-
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -200,4 +232,13 @@ public class PlayerInteractListener implements Listener {
             }
         }
     }
+
+    public static boolean compareLocations(Location loc1, Location loc2) {
+        if (loc1 == null || loc2 == null) return false;
+        return loc1.getWorld().getName().equals(loc2.getWorld().getName()) &&
+                loc1.getBlockX() == loc2.getBlockX() &&
+                loc1.getBlockY() == loc2.getBlockY() &&
+                loc1.getBlockZ() == loc2.getBlockZ();
+    }
+
 }

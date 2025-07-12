@@ -376,6 +376,22 @@ public class Query {
         return list;
     }
 
+    public List<Object[]> getCheckpoints() throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT id, cp_index, location, material, entity_uuid FROM checkpoints";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int cp_index = rs.getInt("cp_index");
+                String location = rs.getString("location");
+                String material = rs.getString("material");
+                UUID entityUUID = UUID.fromString(rs.getString("entity_uuid"));
+                list.add(new Object[]{rs.getInt("id"), cp_index, location, material, entityUUID});
+            }
+        }
+        return list;
+    }
+
     public Location getCheckpointLocation(int parkourId, int checkpointIndex) throws SQLException {
         String sql = "SELECT location FROM checkpoints WHERE parkour_id = ? AND cp_index = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -388,6 +404,33 @@ public class Query {
             }
         }
         return null;
+    }
+
+    public String getMapIdOfCheckpoint(int checkpointId, int checkpointIndex) throws SQLException {
+        String sql = "SELECT parkour_id FROM checkpoints WHERE id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, checkpointId);
+            stmt.setInt(2, checkpointIndex);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("parkour_id");
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean isCheckpoint(int parkourId) throws SQLException {
+        String sql = "SELECT parkour_id, cp_index, location, material FROM checkpoints WHERE parkour_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("parkour_id") == parkourId;
+                }
+            }
+        }
+        return false;
     }
 
 }
