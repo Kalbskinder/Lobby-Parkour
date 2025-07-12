@@ -1,16 +1,11 @@
 package net.crumb.lobbyParkour.utils;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.Map;
 
 public class MMUtils {
     private static final MiniMessage mm = MiniMessage.miniMessage();
