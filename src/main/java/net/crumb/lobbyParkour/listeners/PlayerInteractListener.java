@@ -96,6 +96,8 @@ public class PlayerInteractListener implements Listener {
                     return;
                 } else if (isPkCheckpoint) {
                     // Open the checkpoint manage menu
+                    int parkourId = query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location));
+                    parkourName = query.getParkourNameById(parkourId);
                     CheckpointEditMenu.openMenu(player, parkourName, location);
                 }
             } catch (SQLException ex) {

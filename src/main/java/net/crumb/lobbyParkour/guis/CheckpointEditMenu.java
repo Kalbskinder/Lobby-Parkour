@@ -59,7 +59,6 @@ public class CheckpointEditMenu {
         gui.setItem(22, closeButton);
         gui.setItem(26, deleteButton);
 
-
         player.openInventory(gui);
     }
 }

@@ -242,6 +242,12 @@ public class InventoryClickListener implements Listener {
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
             }
 
+            if (displayName.equals("Manage Checkpoints")) {
+                Component loreLine = event.getView().getItem(10).getItemMeta().lore().get(1);
+                String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                CheckpointListMenu.openMenu(player, name);
+            }
+
             if (displayName.equals("Teleport to plate")) {
                 Component loreLine = event.getView().getItem(10).getItemMeta().lore().get(1);
                 String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
@@ -339,6 +345,10 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("Close")) {
                 clickedInventory.close();
+            }
+
+            if (displayName.equals("Back")) {
+                CheckpointListMenu.openMenu(player, parkourName);
             }
 
             if (displayName.equals("Change Type")) {
@@ -487,6 +497,43 @@ public class InventoryClickListener implements Listener {
                 }
             });
 
+        }
+
+        if (menuTitle.equals("Checkpoint List")) {
+            event.setCancelled(true);
+
+            if (displayName.equals("Close")) {
+                clickedInventory.close();
+            }
+
+            if (displayName.equals("Back")) {
+                Component loreLine = event.getView().getItem(0).getItemMeta().lore().get(0);
+                String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                MapManageMenu.openMenu(player, parkourName);
+            }
+
+            if (displayName.contains("Checkpoint #")) {
+                Component loreLine = event.getView().getItem(0).getItemMeta().lore().get(0);
+                String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                int checkpointIndex = Integer.parseInt(displayName.replace("Checkpoint #", ""));
+                Location location = null;
+
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+                    int parkourId = query.getParkourIdFromName(parkourName);
+                    location = query.getCheckpointLocation(parkourId, checkpointIndex);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+
+                if (location == null) {
+                    MMUtils.sendMessage(player, "Failed to read the location of the checkpoint.", MessageType.ERROR);
+                    return;
+                }
+
+                CheckpointEditMenu.openMenu(player, parkourName, location);
+            }
         }
     }
 }
