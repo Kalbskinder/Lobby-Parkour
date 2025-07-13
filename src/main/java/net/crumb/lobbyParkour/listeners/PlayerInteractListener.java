@@ -3,6 +3,7 @@ package net.crumb.lobbyParkour.listeners;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
+import net.crumb.lobbyParkour.guis.CheckpointEditMenu;
 import net.crumb.lobbyParkour.guis.EditPlateTypeMenu;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
 import net.crumb.lobbyParkour.systems.ParkourSession;
@@ -95,7 +96,7 @@ public class PlayerInteractListener implements Listener {
                     return;
                 } else if (isPkCheckpoint) {
                     // Open the checkpoint manage menu
-                    player.sendMessage("Checkpoint!!!!");
+                    CheckpointEditMenu.openMenu(player, parkourName, location);
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();

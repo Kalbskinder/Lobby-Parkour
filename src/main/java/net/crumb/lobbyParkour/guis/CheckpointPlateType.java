@@ -4,11 +4,13 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.ItemMaker;
+import net.crumb.lobbyParkour.utils.LocationHelper;
 import net.crumb.lobbyParkour.utils.PlateType;
 import net.crumb.lobbyParkour.utils.PressurePlates;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -21,13 +23,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EditPlateTypeMenu {
+public class CheckpointPlateType {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
 
-    public static void openMenu(Player player, String mapName, PlateType menuType) {
+    public static void openMenu(Player player, String mapName, PlateType menuType, Location location) {
         if (!player.hasPermission("lpk.admin")) return;
-        Inventory gui = Bukkit.createInventory(null, 9 * 5, miniMessage.deserialize("<bold><gradient:#369e36:#2bbf11>Change Type<reset>"));
+        Inventory gui = Bukkit.createInventory(null, 9 * 5, miniMessage.deserialize("<bold><gradient:#369e36:#2bbf11>Change Checkpoint Type<reset>"));
         List<String> emptyLore = new ArrayList<>();
 
         ItemStack background = ItemMaker.createItem("minecraft:lime_stained_glass_pane", 1, "", emptyLore);
@@ -39,7 +41,7 @@ public class EditPlateTypeMenu {
         ItemMeta secretMeta = secretItem.getItemMeta();
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text(mapName));
-        lore.add(Component.text(menuType.name()));
+        lore.add(Component.text(LocationHelper.locationToString(location)));
         secretMeta.lore(lore);
         secretMeta.setHideTooltip(true);
 
@@ -51,11 +53,10 @@ public class EditPlateTypeMenu {
             ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
             Query query = new Query(database.getConnection());
 
-            if (menuType == PlateType.START) {
-                currentType = query.getStartType(mapName);
-            } else if (menuType == PlateType.END) {
-                currentType = query.getEndType(mapName);
+            if (menuType == PlateType.CHECKPOINT) {
+                currentType = query.getCheckpointType(LocationHelper.locationToString(location));
             }
+
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -117,5 +118,4 @@ public class EditPlateTypeMenu {
         int col = slot % 9;
         return row == 0 || row == 5 || col == 0 || col == 8;
     }
-
 }

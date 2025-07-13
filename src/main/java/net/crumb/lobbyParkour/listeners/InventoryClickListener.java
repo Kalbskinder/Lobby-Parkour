@@ -3,10 +3,7 @@ package net.crumb.lobbyParkour.listeners;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
-import net.crumb.lobbyParkour.guis.MainMenu;
-import net.crumb.lobbyParkour.guis.MapListMenu;
-import net.crumb.lobbyParkour.guis.MapManageMenu;
-import net.crumb.lobbyParkour.guis.EditPlateTypeMenu;
+import net.crumb.lobbyParkour.guis.*;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -314,7 +311,73 @@ public class InventoryClickListener implements Listener {
                                 query.updateEndType(currentParkour, plate);
                             }
 
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
                             EditPlateTypeMenu.openMenu(player, currentParkour, menuType);
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+
+                    } else {
+                        plugin.getLogger().warning("Unknown material: " + plate);
+                    }
+                }
+            });
+
+        }
+
+        if (menuTitle.equals("Manage Checkpoint")) {
+            event.setCancelled(true);
+
+            Component loreLine = event.getView().getItem(0).getItemMeta().lore().getFirst();
+            Component locationLoreLine = event.getView().getItem(0).getItemMeta().lore().get(1);
+            Location location = LocationHelper.stringToLocation(PlainTextComponentSerializer.plainText().serialize(locationLoreLine));
+            String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+
+            if (displayName.equals("Close")) {
+                clickedInventory.close();
+            }
+
+            if (displayName.equals("Change Type")) {
+                CheckpointPlateType.openMenu(player, parkourName, PlateType.CHECKPOINT, location);
+            }
+        }
+
+        if (menuTitle.equals("Change Checkpoint Type")) {
+            event.setCancelled(true);
+
+            Component loreLine = event.getView().getItem(0).getItemMeta().lore().getFirst();
+            Component locationLoreLine = event.getView().getItem(0).getItemMeta().lore().get(1);
+            Location location = LocationHelper.stringToLocation(PlainTextComponentSerializer.plainText().serialize(locationLoreLine));
+            String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+
+            if (location == null) {
+                MMUtils.sendMessage(player, "Coulnd't find location of the checkpoint.", MessageType.ERROR);
+            }
+
+            if (displayName.equals("Close")) {
+                clickedInventory.close();
+            }
+
+            if (displayName.equals("Back")) {
+                CheckpointEditMenu.openMenu(player, parkourName, location);
+            }
+
+            final String itemName = displayName;
+
+            PressurePlates.get().forEach(plate -> {
+                if (itemName.equals(PressurePlates.formatPlateName(plate))) {
+                    Material material = Material.matchMaterial(plate.replace("minecraft:", ""));
+
+                    if (material != null) {
+                        location.getBlock().setType(material);
+
+                        try {
+                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                            Query query = new Query(database.getConnection());
+                            query.updateCheckpointType(LocationHelper.locationToString(location), plate);
+
+                            CheckpointPlateType.openMenu(player, parkourName, PlateType.CHECKPOINT, location);
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
                         } catch (SQLException ex) {
                             ex.printStackTrace();
                         }

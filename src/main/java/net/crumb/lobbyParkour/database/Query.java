@@ -1,5 +1,6 @@
 package net.crumb.lobbyParkour.database;
 
+import net.crumb.lobbyParkour.utils.ItemMaker;
 import net.crumb.lobbyParkour.utils.LocationHelper;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -428,5 +429,29 @@ public class Query {
             }
         }
     }
+
+    public ItemStack getCheckpointType(String location) throws SQLException {
+        String sql = "SELECT material FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return ItemMaker.createItem(rs.getString("material"), 1, "", new ArrayList<>());
+                }
+            }
+        }
+        return null;
+    }
+
+    public void updateCheckpointType(String location, String newType) throws SQLException {
+        String sql = "UPDATE checkpoints SET material = ? WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, newType);
+            stmt.setString(2, location);
+            stmt.executeUpdate();
+        }
+    }
+
+
 
 }
