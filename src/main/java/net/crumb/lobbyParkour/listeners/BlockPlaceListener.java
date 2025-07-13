@@ -3,13 +3,12 @@ package net.crumb.lobbyParkour.listeners;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
+import net.crumb.lobbyParkour.systems.RelocateCheckpoint;
+import net.crumb.lobbyParkour.systems.RelocateSessionManager;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
@@ -239,6 +238,51 @@ public class BlockPlaceListener implements Listener {
 
                     // Update existing checkpoint displays
                     RenameItemListener.updateCheckpoints(parkourName);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            case "Relocate Checkpoint" -> {
+                if (!RelocateSessionManager.isInSession(player.getUniqueId())) {
+                    event.setCancelled(true);
+                    MMUtils.sendMessage(player, "You are not in a Relocation-Sessions!", MessageType.ERROR);
+                    return;
+                }
+
+                RelocateCheckpoint session = RelocateSessionManager.getRelocationSessions().get(player.getUniqueId());
+                int parkourId = session.getParkourId();
+                int cpIndex = session.getCheckpointIndex();
+
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+                    // Update location
+                    query.updateCheckpointLocation(LocationHelper.locationToString(location), parkourId, cpIndex);
+
+                    String parkourName = query.getParkourNameById(parkourId);
+
+                    // Spawn new display entity
+                    List<Object[]> checkpoints = query.getCheckpoints(query.getParkourIdFromName(parkourName));
+                    Map<String, String> placeholders = Map.of(
+                            "parkour_name", parkourName,
+                            "checkpoint", String.valueOf(cpIndex),
+                            "checkpoint_total", String.valueOf(checkpoints.size())
+                    );
+
+                    Component checkpointText = textFormatter.formatString(ConfigManager.getFormat().getCheckpointPlate(), placeholders);
+                    World world = player.getWorld();
+                    Location textDisplayLocation = new Location(world, location.getX() + 0.5, location.getY() + 1.0, location.getZ() + 0.5);
+                    TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, entity -> {
+                        entity.text(checkpointText);
+                        entity.setBillboard(Display.Billboard.CENTER);
+                    });
+
+                    UUID checkpointEntityUuid = display.getUniqueId();
+                    query.updateCheckPointEntityUUID(LocationHelper.locationToString(location), checkpointEntityUuid);
+                    RelocateSessionManager.removeRelocationSession(player.getUniqueId());
+                    player.getInventory().clear();
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }

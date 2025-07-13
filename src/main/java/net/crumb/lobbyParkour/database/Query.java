@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -450,6 +451,77 @@ public class Query {
             stmt.setString(2, location);
             stmt.executeUpdate();
         }
+    }
+
+    public void updateCheckpointLocation(String location, int parkourId, int checkpointIndex) throws SQLException {
+        String sql = "UPDATE checkpoints SET location = ? WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            stmt.setInt(2, parkourId);
+            stmt.setInt(3, checkpointIndex);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void updateCheckPointEntityUUID(String location, UUID entityUUID) throws SQLException {
+        String sql = "UPDATE checkpoints SET entity_uuid = ? WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, entityUUID.toString());
+            stmt.setString(2, location);
+            stmt.executeUpdate();
+        }
+    }
+
+    public int getCheckpointIndex(String location) throws SQLException {
+        String sql = "SELECT cp_index FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cp_index");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public int getParkourIdByCheckpointLocation(String location) throws SQLException {
+        String sql = "SELECT parkour_id FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("parkour_id");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public UUID getCheckpointDisplay(String location) throws SQLException {
+        String sql = "SELECT entity_uuid FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return UUID.fromString(rs.getString("entity_uuid"));
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getParkourNameById(int id) throws SQLException {
+        String sql = "SELECT pk_name FROM parkours WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("pk_name");
+                }
+            }
+        }
+        return null;
     }
 
 

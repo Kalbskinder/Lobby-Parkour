@@ -4,6 +4,9 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.*;
+import net.crumb.lobbyParkour.systems.ParkourSession;
+import net.crumb.lobbyParkour.systems.RelocateCheckpoint;
+import net.crumb.lobbyParkour.systems.RelocateSessionManager;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -18,6 +21,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.SQLException;
@@ -339,6 +343,41 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("Change Type")) {
                 CheckpointPlateType.openMenu(player, parkourName, PlateType.CHECKPOINT, location);
+            }
+
+            if (displayName.equals("Relocate Checkpoint")) {
+                clickedInventory.close();
+
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+
+                    // Remove the old plate and entity
+                    location.getBlock().setType(Material.AIR);
+                    UUID entityUuid = query.getCheckpointDisplay(LocationHelper.locationToString(location));
+                    World world = location.getWorld();
+                    EntityRemove.suppress(entityUuid);
+                    Entity entity = world.getEntity(entityUuid);
+                    assert entity != null;
+                    entity.remove();
+
+                    // Give the player the item
+                    String plateType = query.getCheckpointType(LocationHelper.locationToString(location)).getType().getKey().toString();
+                    ItemStack checkpointItem = ItemMaker.createItem(plateType, 1, "<blue>Relocate Checkpoint", List.of("<gray>Place this where you want", "<gray>your checkpoint to be."));
+                    player.getInventory().setItem(0, checkpointItem);
+                    player.getInventory().setHeldItemSlot(0);
+
+                    // Create a new relocation session
+                    RelocateCheckpoint session = new RelocateCheckpoint();
+                    int parkourId = query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location));
+                    int checkpointIndex = query.getCheckpointIndex(LocationHelper.locationToString(location));
+                    session.setCheckpointIndex(checkpointIndex);
+                    session.setParkourId(parkourId);
+                    RelocateSessionManager.getRelocationSessions().put(player.getUniqueId(), session);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
 

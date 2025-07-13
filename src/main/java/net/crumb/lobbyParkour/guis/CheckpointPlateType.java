@@ -29,15 +29,15 @@ public class CheckpointPlateType {
 
     public static void openMenu(Player player, String mapName, PlateType menuType, Location location) {
         if (!player.hasPermission("lpk.admin")) return;
-        Inventory gui = Bukkit.createInventory(null, 9 * 5, miniMessage.deserialize("<bold><gradient:#369e36:#2bbf11>Change Checkpoint Type<reset>"));
+        Inventory gui = Bukkit.createInventory(null, 9 * 5, miniMessage.deserialize("<bold><gradient:#2200cc:#5e43e6>Change Checkpoint Type<reset>"));
         List<String> emptyLore = new ArrayList<>();
 
-        ItemStack background = ItemMaker.createItem("minecraft:lime_stained_glass_pane", 1, "", emptyLore);
+        ItemStack background = ItemMaker.createItem("minecraft:blue_stained_glass_pane", 1, "", emptyLore);
         ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
         ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
 
         // Make secret info item
-        ItemStack secretItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE, 1);
+        ItemStack secretItem = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
         ItemMeta secretMeta = secretItem.getItemMeta();
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text(mapName));
