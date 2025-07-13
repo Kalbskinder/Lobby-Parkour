@@ -25,8 +25,8 @@ public class CheckpointEditMenu {
         ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
         ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
         ItemStack deleteButton = ItemMaker.createItem("minecraft:tnt", 1, "<red>Delete Checkpoint", List.of("<yellow><bold>WARNING! <reset><!italic><yellow>Action can not be undone!", "<yellow>Click to delete!"));
-        ItemStack changeCheckpointType = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Change Type", List.of("<yellow>Click to change"));
-        ItemStack relocateCheckpoint = ItemMaker.createItem("minecraft:compass", 1, "<green>Relocate Checkpoint", List.of("<yellow>Click to relocate"));
+        ItemStack changeCheckpointType = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Change Type", List.of("<yellow>Click to change!"));
+        ItemStack relocateCheckpoint = ItemMaker.createItem("minecraft:compass", 1, "<green>Relocate Checkpoint", List.of("<yellow>Click to relocate!"));
         ItemStack secretItem = ItemMaker.createItem("minecraft:blue_stained_glass_pane", 1, "", emptyLore);
 
         ItemMeta meta = secretItem.getItemMeta();

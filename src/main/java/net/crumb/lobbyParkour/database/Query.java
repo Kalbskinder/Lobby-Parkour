@@ -524,6 +524,25 @@ public class Query {
         return null;
     }
 
+    public void removeCheckpoint(int id, int index) throws SQLException {
+        String sql = "DELETE FROM checkpoints WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.setInt(2, index);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void updateCheckpointIndex(int parkourId, int oldIndex, int newIndex) throws SQLException {
+        String sql = "UPDATE checkpoints SET cp_index = ? WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, newIndex);
+            stmt.setInt(2, parkourId);
+            stmt.setInt(3, oldIndex);
+            stmt.executeUpdate();
+        }
+    }
+
 
 
 }

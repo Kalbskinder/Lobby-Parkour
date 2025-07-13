@@ -379,6 +379,66 @@ public class InventoryClickListener implements Listener {
                     ex.printStackTrace();
                 }
             }
+
+            if (displayName.equals("Delete Checkpoint")) {
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+
+                    int parkourId = query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location));
+                    int checkpointIndex = query.getCheckpointIndex(LocationHelper.locationToString(location));
+
+                    // Remove entity and block position
+                    UUID entityUuid = query.getCheckpointDisplay(LocationHelper.locationToString(location));
+                    query.removeCheckpoint(parkourId, checkpointIndex);
+                    location.getBlock().setType(Material.AIR);
+                    World world = location.getWorld();
+                    EntityRemove.suppress(entityUuid);
+                    Entity entity = world.getEntity(entityUuid);
+                    assert entity != null;
+                    entity.remove();
+
+                    // Update the existing indexes
+                    List<Object[]> oldCheckpoints = query.getCheckpoints(parkourId);
+                    oldCheckpoints.forEach(cp -> {
+                        int oldIndex = (Integer) cp[1];
+                        if (oldIndex >  checkpointIndex) {
+                            int newIndex = oldIndex - 1;
+                            try {
+                                query.updateCheckpointIndex(parkourId, oldIndex, newIndex);
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+
+                    // Update existing holograms
+                    List<Object[]> checkpoints = query.getCheckpoints(parkourId);
+                    String pkName = query.getParkourNameById(parkourId);
+                    checkpoints.forEach(checkpoint -> {
+                        UUID entityUUID = (UUID) checkpoint[4];
+                        int cpIndex = (Integer) checkpoint[1];
+                        Entity displayEntity = world.getEntity(entityUUID);
+
+                        if (!(displayEntity instanceof TextDisplay cpTextDisplay)) return;
+
+                        Map<String, String> cpPlaceholders = Map.of(
+                                "checkpoint", String.valueOf(cpIndex),
+                                "checkpoint_total", String.valueOf(checkpoints.size()),
+                                "parkour_name", pkName
+                        );
+
+                        Component cpText = textFormatter.formatString(ConfigManager.getFormat().getCheckpointPlate(), cpPlaceholders);
+                        cpTextDisplay.text(cpText);
+                    });
+
+                    clickedInventory.close();
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
 
         if (menuTitle.equals("Change Checkpoint Type")) {
