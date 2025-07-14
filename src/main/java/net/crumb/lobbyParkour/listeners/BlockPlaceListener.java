@@ -182,6 +182,7 @@ public class BlockPlaceListener implements Listener {
                     ItemStack cancelItem = ActionItemMaker.createItem("minecraft:barrier", 1, "<red>Cancel", List.of("<gray>Cancel the checkpoint setup."), actionId);
                     ItemActionHandler.registerAction(actionId, p -> {
                         p.getInventory().clear();
+
                     });
 
                     ItemStack checkpointItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Checkpoint", new ArrayList<>());
@@ -195,6 +196,13 @@ public class BlockPlaceListener implements Listener {
 
             }
             case "Checkpoint" -> {
+                Map<UUID, String> addCheckpointsCache = InventoryClickListener.getNewCheckpointsCache();
+                if (addCheckpointsCache.containsKey(player.getUniqueId())) {
+                    String parkourName = addCheckpointsCache.get(player.getUniqueId());
+                    createNewCheckpoint(plugin, parkourName, player, location);
+                    return;
+                }
+
                 Map<String, Object> data = parkourCache.get(player.getUniqueId());
                 Location endLocation = (Location) data.get("endLocation");
                 if (endLocation == null) {
@@ -204,43 +212,7 @@ public class BlockPlaceListener implements Listener {
                 }
 
                 String parkourName = (String) data.get("mapName");
-
-                try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
-
-                    int parkourId = query.getParkourIdFromName(parkourName);
-                    int cpIndex = query.getMaxCheckpointIndex(parkourId) + 1; // New index
-                    if (cpIndex > 28) {
-                        MMUtils.sendMessage(player, "You can't have more than 28 parkours!", MessageType.ERROR);
-                    }
-
-                    List<Object[]> checkpoints = query.getCheckpoints(query.getParkourIdFromName(parkourName));
-
-                    Map<String, String> placeholders = Map.of(
-                            "parkour_name", parkourName,
-                            "checkpoint", String.valueOf(cpIndex),
-                            "checkpoint_total", String.valueOf(checkpoints.size() + 1)
-                    );
-
-                    Component checkpointText = textFormatter.formatString(ConfigManager.getFormat().getCheckpointPlate(), placeholders);
-                    World world = player.getWorld();
-                    Location textDisplayLocation = new Location(world, location.getX() + 0.5, location.getY() + 1.0, location.getZ() + 0.5);
-                    TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, entity -> {
-                        entity.text(checkpointText);
-                        entity.setBillboard(Display.Billboard.CENTER);
-                    });
-
-                    UUID checkpointEntityUuid = display.getUniqueId();
-
-                    query.createCheckpoint(parkourId, cpIndex, location, "minecraft:heavy_weighted_pressure_plate", checkpointEntityUuid);
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
-
-                    // Update existing checkpoint displays
-                    RenameItemListener.updateCheckpoints(parkourName);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+                createNewCheckpoint(plugin, parkourName, player, location);
             }
 
             case "Relocate Checkpoint" -> {
@@ -288,7 +260,45 @@ public class BlockPlaceListener implements Listener {
                 }
             }
         }
+    }
 
+    private static void createNewCheckpoint(LobbyParkour plugin, String parkourName, Player player, Location location) {
+        try {
+            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+            Query query = new Query(database.getConnection());
+
+            int parkourId = query.getParkourIdFromName(parkourName);
+            int cpIndex = query.getMaxCheckpointIndex(parkourId) + 1; // New index
+            if (cpIndex > 28) {
+                MMUtils.sendMessage(player, "You can't have more than 28 parkours!", MessageType.ERROR);
+            }
+
+            List<Object[]> checkpoints = query.getCheckpoints(query.getParkourIdFromName(parkourName));
+
+            Map<String, String> placeholders = Map.of(
+                    "parkour_name", parkourName,
+                    "checkpoint", String.valueOf(cpIndex),
+                    "checkpoint_total", String.valueOf(checkpoints.size() + 1)
+            );
+
+            Component checkpointText = textFormatter.formatString(ConfigManager.getFormat().getCheckpointPlate(), placeholders);
+            World world = player.getWorld();
+            Location textDisplayLocation = new Location(world, location.getX() + 0.5, location.getY() + 1.0, location.getZ() + 0.5);
+            TextDisplay display = world.spawn(textDisplayLocation, TextDisplay.class, entity -> {
+                entity.text(checkpointText);
+                entity.setBillboard(Display.Billboard.CENTER);
+            });
+
+            UUID checkpointEntityUuid = display.getUniqueId();
+
+            query.createCheckpoint(parkourId, cpIndex, location, "minecraft:heavy_weighted_pressure_plate", checkpointEntityUuid);
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+
+            // Update existing checkpoint displays
+            RenameItemListener.updateCheckpoints(parkourName);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

@@ -4,7 +4,6 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.utils.ItemMaker;
-import net.crumb.lobbyParkour.utils.LocationHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -30,6 +29,7 @@ public class CheckpointListMenu {
         ItemStack background = ItemMaker.createItem("minecraft:blue_stained_glass_pane", 1, "", emptyLore);
         ItemStack backArrow = ItemMaker.createItem("minecraft:arrow", 1, "<green>Back", List.of("<gray>Previous page"));
         ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
+        ItemStack newCheckpointButton = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>New Checkpoint", List.of("<gray>Setup a new checkpoint", "<yellow>Click to setup!"));
 
         // Make secret info item
         ItemStack secretItem = new ItemStack(Material.BLUE_STAINED_GLASS_PANE, 1);
@@ -56,6 +56,7 @@ public class CheckpointListMenu {
             }
         }
 
+        gui.setItem(45, newCheckpointButton);
         gui.setItem(48, backArrow);
         gui.setItem(49, closeButton);
         gui.setItem(0, secretItem);

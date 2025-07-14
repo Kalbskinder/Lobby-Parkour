@@ -30,6 +30,7 @@ import java.util.*;
 public class InventoryClickListener implements Listener {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
     private static final TextFormatter textFormatter = new TextFormatter();
+    private static final Map<UUID, String> newCheckpointsCache = new HashMap<>();
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -534,6 +535,30 @@ public class InventoryClickListener implements Listener {
 
                 CheckpointEditMenu.openMenu(player, parkourName, location);
             }
+
+            if (displayName.equals("New Checkpoint")) {
+                Component loreLine = event.getView().getItem(0).getItemMeta().lore().get(0);
+                String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                clickedInventory.close();
+
+                Map<UUID, String> cache = getNewCheckpointsCache();
+                cache.put(player.getUniqueId(), parkourName);
+
+                String actionId = player.getUniqueId() + "cancel-cp-setup";
+                ItemStack cancelItem = ActionItemMaker.createItem("minecraft:barrier", 1, "<red>Cancel", List.of("<gray>Cancel the checkpoint setup."), actionId);
+                ItemActionHandler.registerAction(actionId, p -> {
+                    p.getInventory().clear();
+                    getNewCheckpointsCache().remove(player.getUniqueId());
+                });
+
+                ItemStack checkpointItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Checkpoint", new ArrayList<>());
+                player.getInventory().setItem(0, checkpointItem);
+                player.getInventory().setItem(1, cancelItem);
+            }
         }
+    }
+
+    public static Map<UUID, String> getNewCheckpointsCache() {
+        return newCheckpointsCache;
     }
 }

@@ -17,11 +17,21 @@ public class PlayerDropItemListener implements Listener {
 
         if (ParkourSessionManager.isInSession(player.getUniqueId())) {
             event.setCancelled(true); // Cancel the event
+            return;
         }
 
         if (RelocateSessionManager.isInSession(player.getUniqueId())) {
             event.setCancelled(true);
             MMUtils.sendMessage(player, "You can not drop this item! If you want to delete this checkpoint, place it back down and use the delete option.", MessageType.WARNING);
+            return;
+        }
+
+        if (InventoryClickListener.getNewCheckpointsCache().containsKey(player.getUniqueId())) {
+            event.setCancelled(true);
+            player.getInventory().clear();
+            MMUtils.sendMessage(player, "Canceled setting up a new parkour!", MessageType.INFO);
+            InventoryClickListener.getNewCheckpointsCache().remove(player.getUniqueId());
+            player.getInventory().clear();
         }
 
     }
