@@ -32,8 +32,9 @@ public class MapManageMenu {
         ItemStack closeButton = ItemMaker.createItem("minecraft:barrier", 1, "<red>Close", emptyLore);
         ItemStack deleteButton = ItemMaker.createItem("minecraft:tnt", 1, "<red>Delete Parkour", List.of("<yellow><bold>WARNING! <reset><!italic><yellow>Action can not be undone!", "<yellow>Click to delete!"));
         ItemStack renameButton = ItemMaker.createItem("minecraft:paper", 1, "<green>Rename Parkour", List.of("<gray>Current name:", "<white>" + parkourName, "<yellow>Click to rename!"));
-        ItemStack changeStartTypeButton = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Change Start Type", List.of("<yellow>Click to change"));
-        ItemStack changeEndTypeButton = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Change End Type", List.of("<yellow>Click to change"));
+        ItemStack changeStartTypeButton = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Change Start Type", List.of("<yellow>Click to change!"));
+        ItemStack changeEndTypeButton = ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Change End Type", List.of("<yellow>Click to change!"));
+        ItemStack manageCheckpoints = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Manage Checkpoints", List.of("<yellow>Click to change!"));
         ItemStack teleportItem = makeTeleportItem(parkourName);
 
         int size = gui.getSize();
@@ -53,7 +54,8 @@ public class MapManageMenu {
         gui.setItem(10, renameButton);
         gui.setItem(11, changeStartTypeButton);
         gui.setItem(12, changeEndTypeButton);
-        gui.setItem(13, teleportItem);
+        gui.setItem(13, manageCheckpoints);
+        gui.setItem(16, teleportItem);
 
         gui.setItem(21, backArrow);
         gui.setItem(22, closeButton);
