@@ -111,6 +111,7 @@ public class PlayerInteractListener implements Listener {
                 Location location = block.getLocation();
                 boolean isPkStart = false;
                 boolean isPkEnd = false;
+                boolean isCheckpoint = false;
 
                 try {
                     ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
@@ -122,10 +123,17 @@ public class PlayerInteractListener implements Listener {
                     List<Object[]> pkEnds = query.getAllParkourEnds();
                     isPkEnd = pkEnds.stream().anyMatch(entry -> (entry[1]).equals(location));
 
+                    if (!isPkStart && !isPkEnd) {
+                        List<Object[]> pkCheckpoints = query.getCheckpoints(query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location)));
+                        isCheckpoint = pkCheckpoints.stream().anyMatch(entry -> (entry[2]).equals(LocationHelper.locationToString(location)));
+                    }
+
                     if (isPkStart) {
                         parkourName = query.getMapnameByPkSpawn(location);
                     } else if (isPkEnd) {
                         parkourName = query.getMapnameByPkEnd(location);
+                    } else if (isCheckpoint) {
+                        parkourName = query.getParkourNameById(query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location)));
                     }
 
                 } catch (SQLException ex) {
@@ -146,15 +154,27 @@ public class PlayerInteractListener implements Listener {
 
                     if (!ParkourSessionManager.isInSession(player.getUniqueId())) {
                         ParkourSessionManager.startSession(player.getUniqueId(), parkourName);
-                        ParkourSessionManager.getSession(player.getUniqueId()).resetTime();
+                        ParkourSession session = ParkourSessionManager.getSession(player.getUniqueId());
+                        session.resetTime();
                         List<String> emptyLore = new ArrayList<>();
+
+                        try {
+                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                            Query query = new Query(database.getConnection());
+                            int parkourId = query.getParkourIdFromName(parkourName);
+                            int checkpointCount = query.getCheckpoints(parkourId).size();
+                            session.setMaxCheckpoints(checkpointCount);
+                        } catch (SQLException ex) {
+                            MMUtils.sendMessage(player, "Could not get checkpoints from database.", MessageType.ERROR);
+                            ex.printStackTrace();
+                        }
 
                         // Item action ids for right-click actions
                         String resetPkActionId = player.getUniqueId() + "reset-pk";
                         String leavePkActionId = player.getUniqueId() + "leave-pk";
                         String lastCheckpointActionId = player.getUniqueId() + "last-checkpoint-pk";
 
-                        String timer = ParkourTimer.formatTimer(ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds(), ConfigManager.getFormat().getTimer());
+                        String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer());
 
                         ItemActionHandler.registerAction(resetPkActionId, p -> {
                             p.teleport(location);
@@ -203,11 +223,17 @@ public class PlayerInteractListener implements Listener {
                         ));
                         player.sendMessage(startMessage);
                     }
-                } else {
+                } else if (isPkEnd) {
                     // Player finished the parkour
                     if (ParkourSessionManager.isInSession(player.getUniqueId())) {
                         ParkourSession session = ParkourSessionManager.getSession(player.getUniqueId());
                         if (!session.getParkourName().equals(parkourName)) return;
+
+                        if (session.getMaxCheckpoints() != session.getCompletedCheckpoints()) {
+                            MMUtils.sendMessage(player, ConfigManager.getFormat().getCheckpointSkipMessage());
+                            return;
+                        }
+
                         float timerMillis = ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds();
                         String timer = ParkourTimer.formatTimer(timerMillis, ConfigManager.getFormat().getTimer());
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
@@ -230,6 +256,49 @@ public class PlayerInteractListener implements Listener {
                         ));
 
                         player.sendMessage(endMessage);
+                    }
+                } else if (isCheckpoint) {
+                    UUID uuid = player.getUniqueId();
+                    if (ParkourSessionManager.isInSession(uuid)) {
+                        ParkourSession session = ParkourSessionManager.getSession(uuid);
+
+                        // Player stepped on a different checkpoint (not a part of the session's parkour)
+                        if (!session.getParkourName().equals(parkourName)) return;
+
+                        // Get the index of the stepped pressure plate
+                        try {
+                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                            Query query = new Query(database.getConnection());
+
+                            int checkpointIndex = query.getCheckpointIndex(LocationHelper.locationToString(location));
+
+                            if (checkpointIndex == -1) {
+                                MMUtils.sendMessage(player, "Could not find checkpoint!", MessageType.ERROR);
+                                return;
+                            }
+
+                            int sessionCheckpointIndex = session.getLastReachedCheckpointIndex();
+                            if (checkpointIndex == session.getLastReachedCheckpointIndex()) return;
+                            if (checkpointIndex != sessionCheckpointIndex + 1) {
+                                MMUtils.sendMessage(player, ConfigManager.getFormat().getCheckpointSkipMessage());
+                                return;
+                            }
+
+                            session.setLastReachedCheckpointIndex(checkpointIndex);
+                            session.setCompletedCheckpoints(checkpointIndex);
+                            String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer());
+
+                            Component checkpointMessage = textFormatter.formatString(ConfigManager.getFormat().getCheckpointMessage(), player, Map.of(
+                                    "parkour_name", parkourName,
+                                    "player_name", player.getName(),
+                                    "checkpoint", String.valueOf(checkpointIndex),
+                                    "timer", timer
+                            ));
+                            player.sendMessage(checkpointMessage);
+
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
             }

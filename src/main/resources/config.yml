@@ -36,6 +36,8 @@ formatting:
   # %checkpoint% -> The number of the checkpoint
   tp-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have been teleported to your last checkpoint.</color>"
   checkpoint-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You have reached <white>Checkpoint #%checkpoint%</white> in <white>%timer%</white>.</color>"
+  # No placeholders supported
+  checkpoint-skip-message: "<color:#ff9c40>☄</color> <color:#474747>»</color> <color:#ffed8a>You've missed a checkpoint!"
 
   # The action bar will be displayed while a player is doing a parkour.
   # %parkour_name% -> The name of the parkour

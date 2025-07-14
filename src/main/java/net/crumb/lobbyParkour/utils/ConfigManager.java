@@ -62,6 +62,10 @@ public class ConfigManager {
             return config.getString(path + "action-bar");
         }
 
+        public String getCheckpointSkipMessage() {
+            return config.getString(path + "checkpoint-skip-message");
+        }
+
         public Leaderboard getLeaderboard() {
             return new Leaderboard(path + "leaderboard.");
         }
