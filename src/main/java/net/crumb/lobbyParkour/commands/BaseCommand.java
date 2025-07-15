@@ -7,6 +7,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.guis.MainMenu;
 import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.SoundUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -72,7 +73,11 @@ public class BaseCommand {
             MMUtils.sendMessage(player, deserializeCentered(line));
         });
 
-        player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1f, 0);
+        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.1f, 3);
+        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.2f, 6);
+        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.3f, 9);
+        SoundUtils.playSoundSequence(player, Sound.ENTITY_PLAYER_LEVELUP, 0.7f, 1.4f, 12);
     }
 
     public static String deserializeCentered(String input) {
