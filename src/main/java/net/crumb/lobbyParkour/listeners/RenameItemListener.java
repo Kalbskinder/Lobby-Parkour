@@ -30,9 +30,7 @@ import java.util.UUID;
 
 public class RenameItemListener implements Listener {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
-    private static final String prefix = Prefixes.getPrefix();
     private static final TextFormatter textFormatter = new TextFormatter();
-
 
     @EventHandler
     public void onItemRename(InventoryClickEvent e) {
