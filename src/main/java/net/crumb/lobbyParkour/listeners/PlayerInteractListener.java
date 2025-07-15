@@ -202,7 +202,23 @@ public class PlayerInteractListener implements Listener {
                         });
 
                         ItemActionHandler.registerAction(lastCheckpointActionId, p -> {
-                            p.sendMessage("Teleported to the last checkpoint!");
+                            int lastIndex = ParkourSessionManager.getSessions().get(player.getUniqueId()).getLastReachedCheckpointIndex();
+                            try {
+                                ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                                Query query = new Query(database.getConnection());
+                                Location loc = null;
+                                int parkourId = query.getParkourIdFromName(parkourName);
+                                if (lastIndex != 0) {
+                                    loc = query.getCheckpointLocation(parkourId, lastIndex);
+                                } else {
+                                    loc = query.getStartLocation(parkourName);
+                                }
+
+                                Location teleportLocation = new Location(player.getWorld(), loc.getX(), loc.getY(), loc.getZ(), player.getYaw(), player.getPitch());
+                                player.teleport(teleportLocation);
+                            } catch (SQLException ex) {
+                                MMUtils.sendMessage(player, "Could not get checkpoints from database.", MessageType.ERROR);
+                            }
                         });
 
                         // Create parkour items
