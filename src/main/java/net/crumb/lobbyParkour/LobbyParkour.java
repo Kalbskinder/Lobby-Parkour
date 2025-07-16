@@ -54,8 +54,6 @@ public final class LobbyParkour extends JavaPlugin {
         startUpMessage();
         registerListeners();
 
-        saveResource("config.yml", /* replace */ false);
-
         ConfigManager.loadConfig(getConfig());
 
         try {
