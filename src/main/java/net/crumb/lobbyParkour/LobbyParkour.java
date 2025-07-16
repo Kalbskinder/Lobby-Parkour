@@ -1,5 +1,6 @@
 package net.crumb.lobbyParkour;
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.crumb.lobbyParkour.commands.BaseCommand;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.listeners.*;
@@ -38,6 +39,7 @@ public final class LobbyParkour extends JavaPlugin {
         pm.registerEvents(new RenameItemListener(), this);
         pm.registerEvents(new EntityRemove(), this);
         pm.registerEvents(new PlayerInteractListener(), this);
+        pm.registerEvents(new PlayerDropItemListener(), this);
         pm.registerEvents(new ItemActionHandler(), this);
     }
 
@@ -45,13 +47,14 @@ public final class LobbyParkour extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        getCommand("lpk").setExecutor(new BaseCommand(this));
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(new BaseCommand().getBuildCommand());
+        });
 
         saveDefaultConfig();
         startUpMessage();
         registerListeners();
-
-        saveResource("config.yml", /* replace */ false);
+      
         ConfigManager.loadConfig(getConfig());
 
         try {

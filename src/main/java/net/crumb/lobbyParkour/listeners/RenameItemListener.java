@@ -24,14 +24,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.view.AnvilView;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class RenameItemListener implements Listener {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
-    private static final String prefix = Prefixes.getPrefix();
     private static final TextFormatter textFormatter = new TextFormatter();
-
 
     @EventHandler
     public void onItemRename(InventoryClickEvent e) {
@@ -93,6 +92,8 @@ public class RenameItemListener implements Listener {
             Component endText = textFormatter.formatString(ConfigManager.getFormat().getEndPlate(), endPlaceholders);
             endTextDisplay.text(endText);
 
+            updateCheckpoints(itemName);
+
             MMUtils.sendMessage(player, "The parkour <white>"+oldName+"</white> has been renamed to <white>"+itemName+"</white>!", MessageType.INFO);
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -123,5 +124,44 @@ public class RenameItemListener implements Listener {
         player.getInventory().remove(result);
     }
 
+    public static void updateCheckpoints(String parkourName) {
+        try {
+            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+            Query query = new Query(database.getConnection());
+
+            int parkourId = query.getParkourIdFromName(parkourName);
+            List<Object[]> checkpoints = query.getCheckpoints(parkourId);
+            checkpoints.forEach(checkpoint -> {
+                int cpIndex = (int) checkpoint[1];
+                Location cpLocation = null;
+
+                try {
+                    cpLocation = query.getCheckpointLocation(parkourId, cpIndex);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
+                UUID cpEntityUuid = (UUID) checkpoint[4];
+
+                World world = cpLocation.getWorld();
+
+                if (world == null) return;
+
+                Entity entity = world.getEntity(cpEntityUuid);
+                if (!(entity instanceof TextDisplay cpTextDisplay)) return;
+
+                Map<String, String> cpPlaceholders = Map.of(
+                        "checkpoint", String.valueOf(cpIndex),
+                        "checkpoint_total", String.valueOf(checkpoints.size()),
+                        "parkour_name", parkourName
+                );
+
+                Component cpText = textFormatter.formatString(ConfigManager.getFormat().getCheckpointPlate(), cpPlaceholders);
+                cpTextDisplay.text(cpText);
+            });
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
 
 }

@@ -66,6 +66,10 @@ public class ConfigManager {
             return config.getString("formatting.action-bar", "<color:#7ae0ff>%timer%</color> <color:#39aacc>\u231a</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%checkpoint%</color></color><color:#b8b8b8>/%checkpoint_total%</color> <green>\u2691</green>");
         }
 
+        public String getCheckpointSkipMessage() {
+            return config.getString(path + "checkpoint-skip-message");
+        }
+
         public Leaderboard getLeaderboard() {
             return new Leaderboard("formatting.leaderboard.");
         }

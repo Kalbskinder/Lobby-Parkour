@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class ItemActionHandler implements Listener {
-    private static final Logger logger = Logger.getLogger("PTZ");
+    private static final Logger logger = Logger.getLogger("Lobby-Parkour");
     private static final Map<String, Consumer<Player>> actions = new HashMap<>();
 
 

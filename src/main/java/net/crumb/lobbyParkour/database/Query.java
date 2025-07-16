@@ -1,5 +1,6 @@
 package net.crumb.lobbyParkour.database;
 
+import net.crumb.lobbyParkour.utils.ItemMaker;
 import net.crumb.lobbyParkour.utils.LocationHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -8,6 +9,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.sql.*;
 import java.util.*;
 
@@ -68,6 +70,28 @@ public class Query {
         }
         return null;
     }
+
+    public ItemStack getEndType(String mapName) throws SQLException {
+        String sql = "SELECT end_cp_material FROM parkours WHERE pk_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, mapName);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String materialName = rs.getString("end_cp_material");
+                    if (materialName.startsWith("minecraft:")) {
+                        materialName = materialName.substring(10);
+                    }
+
+                    Material material = Material.matchMaterial(materialName.toUpperCase());
+                    if (material != null) {
+                        return new ItemStack(material);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
     public UUID getStartEntityUuid(String mapName) throws SQLException {
         String sql = "SELECT start_cp_entity_uuid FROM parkours WHERE pk_name = ?";
@@ -140,7 +164,17 @@ public class Query {
         }
     }
 
-    public String getMapNameByPkSpawn(Location location) throws SQLException {
+
+    public void updateEndType(String mapName, String newType) throws SQLException {
+        String sql = "UPDATE parkours SET end_cp_material = ? WHERE pk_name = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, newType);
+            stmt.setString(2, mapName);
+            stmt.executeUpdate();
+        }
+    }
+
+    public String getMapnameByPkSpawn(Location location) throws SQLException {
         String sql = "SELECT pk_name FROM parkours WHERE start_cp = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, LocationHelper.locationToString(location));
@@ -245,23 +279,50 @@ public class Query {
         }
     }
 
-    public void createLeaderboardLine(int leaderboardId, Location location, UUID entityUuid, int position) throws SQLException {
-        String sql = "INSERT INTO leaderboard_lines (location, entity_uuid, position, leaderboard_id) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, LocationHelper.locationToString(location));
-            stmt.setString(2, entityUuid.toString());
-            stmt.setInt(3, position);
-            stmt.setInt(4, leaderboardId);
-            stmt.executeUpdate();
-        }
-    }
-
-    public int getParkourId(String parkourName) throws SQLException {
+    public Integer getParkourIdFromName(String parkourName) throws SQLException {
         String sql = "SELECT id FROM parkours WHERE pk_name = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, parkourName);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) return rs.getInt("id");
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    return null;
+                }
+            }
+        }
+    }
+
+    public void saveTime(UUID uuid, int parkourId, float time) throws SQLException {
+        String sql = "INSERT INTO times (uuid, comp_time, parkour_id) VALUES (?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, uuid.toString());
+            stmt.setFloat(2, time);
+            stmt.setInt(3, parkourId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void createCheckpoint(int parkourId, int cp_index, Location location, String material, UUID entityUUID) throws SQLException {
+        String sql = "INSERT INTO checkpoints (parkour_id, cp_index, location, material, entity_uuid) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            stmt.setInt(2, cp_index);
+            stmt.setString(3, LocationHelper.locationToString(location));
+            stmt.setString(4, material);
+            stmt.setString(5, entityUUID.toString());
+            stmt.executeUpdate();
+        }
+    }
+
+    public int getMaxCheckpointIndex(int parkourId) throws SQLException {
+        String sql = "SELECT MAX(cp_index) AS max_index FROM checkpoints WHERE parkour_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("max_index");
+                }
             }
         }
         return 0;
@@ -280,17 +341,47 @@ public class Query {
         return uuids;
     }
 
-    public Map<String, Object> getLeaderboardLineByUuid(UUID uuid) throws SQLException {
-        String sql = "SELECT location, position, leaderboard_id FROM leaderboard_lines WHERE entity_uuid = ?";
+    public List<Object[]> getCheckpoints(int parkourId) throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT id, cp_index, location, material, entity_uuid FROM checkpoints WHERE parkour_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, uuid.toString());
+            stmt.setInt(1, parkourId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int cp_index = rs.getInt("cp_index");
+                String location = rs.getString("location");
+                String material = rs.getString("material");
+                UUID entityUUID = UUID.fromString(rs.getString("entity_uuid"));
+                list.add(new Object[]{rs.getInt("id"), cp_index, location, material, entityUUID});
+            }
+        }
+        return list;
+    }
+
+    public List<Object[]> getCheckpoints() throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String sql = "SELECT id, cp_index, location, material, entity_uuid FROM checkpoints";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int cp_index = rs.getInt("cp_index");
+                String location = rs.getString("location");
+                String material = rs.getString("material");
+                UUID entityUUID = UUID.fromString(rs.getString("entity_uuid"));
+                list.add(new Object[]{rs.getInt("id"), cp_index, location, material, entityUUID});
+            }
+        }
+        return list;
+    }
+
+    public Location getCheckpointLocation(int parkourId, int checkpointIndex) throws SQLException {
+        String sql = "SELECT location FROM checkpoints WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            stmt.setInt(2, checkpointIndex);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("location", LocationHelper.stringToLocation(rs.getString("location")));
-                    result.put("position", rs.getInt("position"));
-                    result.put("leaderboard_id", rs.getInt("leaderboard_id"));
-                    return result;
+                    return LocationHelper.stringToLocation(rs.getString("location"));
                 }
             }
         }
@@ -306,20 +397,47 @@ public class Query {
         }
     }
 
-    public String getParkourNameByLeaderboard(int leaderboardId) throws SQLException {
-        String sql = "SELECT pk.pk_name FROM parkours pk JOIN leaderboards lb ON pk.id = lb.parkour_id WHERE lb.id = ?";
+    public boolean isCheckpoint(int parkourId) throws SQLException {
+        String sql = "SELECT parkour_id, cp_index, location, material FROM checkpoints WHERE parkour_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, leaderboardId);
+            stmt.setInt(1, parkourId);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) return rs.getString("pk_name");
+                if (rs.next()) {
+                    return rs.getInt("parkour_id") == parkourId;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isCheckpoint(Location location) throws SQLException {
+        String sql = "SELECT 1 FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, LocationHelper.locationToString(location));
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public ItemStack getCheckpointType(String location) throws SQLException {
+        String sql = "SELECT material FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return ItemMaker.createItem(rs.getString("material"), 1, "", new ArrayList<>());
+                }
             }
         }
         return null;
     }
 
-    public void removeDisplayItems() throws SQLException {
-        String sql = "DELETE FROM leaderboard_lines WHERE position = -1";
+    public void updateCheckpointType(String location, String newType) throws SQLException {
+        String sql = "UPDATE checkpoints SET material = ? WHERE location = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, newType);
+            stmt.setString(2, location);
             stmt.executeUpdate();
         }
     }
@@ -345,4 +463,133 @@ public class Query {
         return result;
     }
 
+    public void updateCheckpointLocation(String location, int parkourId, int checkpointIndex) throws SQLException {
+        String sql = "UPDATE checkpoints SET location = ? WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            stmt.setInt(2, parkourId);
+            stmt.setInt(3, checkpointIndex);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void updateCheckPointEntityUUID(String location, UUID entityUUID) throws SQLException {
+        String sql = "UPDATE checkpoints SET entity_uuid = ? WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, entityUUID.toString());
+            stmt.setString(2, location);
+            stmt.executeUpdate();
+        }
+    }
+
+    public int getCheckpointIndex(String location) throws SQLException {
+        String sql = "SELECT cp_index FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cp_index");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public int getParkourIdByCheckpointLocation(String location) throws SQLException {
+        String sql = "SELECT parkour_id FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("parkour_id");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public UUID getCheckpointDisplay(String location) throws SQLException {
+        String sql = "SELECT entity_uuid FROM checkpoints WHERE location = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, location);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return UUID.fromString(rs.getString("entity_uuid"));
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getParkourNameById(int id) throws SQLException {
+        String sql = "SELECT pk_name FROM parkours WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("pk_name");
+                }
+            }
+        }
+        return null;
+    }
+
+    public void removeCheckpoint(int id, int index) throws SQLException {
+        String sql = "DELETE FROM checkpoints WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.setInt(2, index);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void updateCheckpointIndex(int parkourId, int oldIndex, int newIndex) throws SQLException {
+        String sql = "UPDATE checkpoints SET cp_index = ? WHERE parkour_id = ? AND cp_index = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, newIndex);
+            stmt.setInt(2, parkourId);
+            stmt.setInt(3, oldIndex);
+            stmt.executeUpdate();
+        }
+    }
+
+    public Map<String, Object> getLeaderboardLineByUuid(UUID uuid) throws SQLException {
+        String sql = "SELECT location, position, leaderboard_id FROM leaderboard_lines WHERE entity_uuid = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, uuid.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("location", LocationHelper.stringToLocation(rs.getString("location")));
+                    result.put("position", rs.getInt("position"));
+                    result.put("leaderboard_id", rs.getInt("leaderboard_id"));
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public void createLeaderboardLine(int leaderboardId, Location location, UUID entityUuid, int position) throws SQLException {
+        String sql = "INSERT INTO leaderboard_lines (location, entity_uuid, position, leaderboard_id) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, LocationHelper.locationToString(location));
+            stmt.setString(2, entityUuid.toString());
+            stmt.setInt(3, position);
+            stmt.setInt(4, leaderboardId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public String getParkourNameByLeaderboard(int leaderboardId) throws SQLException {
+        String sql = "SELECT pk.pk_name FROM parkours pk JOIN leaderboards lb ON pk.id = lb.parkour_id WHERE lb.id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, leaderboardId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getString("pk_name");
+            }
+        }
+        return null;
+    }
 }

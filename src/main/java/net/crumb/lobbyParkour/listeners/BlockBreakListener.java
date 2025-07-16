@@ -60,6 +60,14 @@ public class BlockBreakListener implements Listener {
                         return;
                     }
                 }
+
+                if (query.isCheckpoint(loc)) {
+                    e.setCancelled(true);
+                    if (e.getPlayer().hasPermission("lpk.admin")) {
+                        MMUtils.sendMessage(e.getPlayer(), "You cannot break this block! If you wish to delete this parkour please use <hover:show_text:'<color:#52a3ff>✎</color> <color:#ffeb7a>Click to use!</color>'><click:run_command:'/lpk'><white>/lpk</white></click></hover>!", MessageType.WARNING);
+                    }
+                    return;
+                }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

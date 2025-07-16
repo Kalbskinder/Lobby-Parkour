@@ -3,13 +3,12 @@ package net.crumb.lobbyParkour.listeners;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
-import net.crumb.lobbyParkour.guis.MainMenu;
-import net.crumb.lobbyParkour.guis.MapListMenu;
-import net.crumb.lobbyParkour.guis.MapManageMenu;
-import net.crumb.lobbyParkour.guis.ParkourStartPlateGUI;
+import net.crumb.lobbyParkour.guis.*;
+import net.crumb.lobbyParkour.systems.ParkourSession;
+import net.crumb.lobbyParkour.systems.RelocateCheckpoint;
+import net.crumb.lobbyParkour.systems.RelocateSessionManager;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,15 +21,16 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public class InventoryClickListener implements Listener {
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
     private static final TextFormatter textFormatter = new TextFormatter();
+    private static final Map<UUID, String> newCheckpointsCache = new HashMap<>();
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
@@ -67,7 +67,7 @@ public class InventoryClickListener implements Listener {
             if (displayName.equals("+ Create a new parkour")) {
                 player.getInventory().clear(0);
                 player.getOpenInventory().close();
-                MMUtils.sendMessage(player, "Please place the start of your parkour. <gray>(1/2)</gray>", MessageType.INFO);
+                MMUtils.sendMessage(player, "Please place the start of your parkour. <gray>(1/3)</gray>", MessageType.INFO);
                 ItemMaker.giveItemToPlayer(player, ItemMaker.createItem("minecraft:light_weighted_pressure_plate", 1, "<green>Parkour Start", Arrays.asList("<gray>Place this where you want", "<gray>your parkour to start.")), 0);
             }   player.getInventory().setHeldItemSlot(0);
 
@@ -229,11 +229,24 @@ public class InventoryClickListener implements Listener {
                 MapListMenu.openMenu(player);
             }
 
-            if (displayName.equals("Change Type")) {
+            if (displayName.equals("Change End Type")) {
                 Component loreLine = event.getView().getItem(10).getItemMeta().lore().get(1);
                 String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
-                ParkourStartPlateGUI.openMenu(player, name);
+                EditPlateTypeMenu.openMenu(player, name, PlateType.END);
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+            }
+
+            if (displayName.equals("Change Start Type")) {
+                Component loreLine = event.getView().getItem(10).getItemMeta().lore().get(1);
+                String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                EditPlateTypeMenu.openMenu(player, name, PlateType.START);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+            }
+
+            if (displayName.equals("Manage Checkpoints")) {
+                Component loreLine = event.getView().getItem(10).getItemMeta().lore().get(1);
+                String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                CheckpointListMenu.openMenu(player, name);
             }
 
             if (displayName.equals("Teleport to plate")) {
@@ -284,13 +297,19 @@ public class InventoryClickListener implements Listener {
             PressurePlates.get().forEach(plate -> {
                 if (itemName.equals(PressurePlates.formatPlateName(plate))) {
                     Component loreLine = event.getView().getItem(0).getItemMeta().lore().get(0);
+                    String menuTypeString = PlainTextComponentSerializer.plainText().serialize(event.getView().getItem(0).getItemMeta().lore().get(1));
+                    PlateType menuType = PlateType.valueOf(menuTypeString);
                     Location loc = null;
 
                     // Get location of plate
                     try {
                         ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
                         Query query = new Query(database.getConnection());
-                        loc = query.getStartLocation(PlainTextComponentSerializer.plainText().serialize(loreLine));
+                        if (menuType == PlateType.START) {
+                            loc = query.getStartLocation(PlainTextComponentSerializer.plainText().serialize(loreLine));
+                        } else if (menuType == PlateType.END) {
+                            loc = query.getEndLocation(PlainTextComponentSerializer.plainText().serialize(loreLine));
+                        }
                     } catch (SQLException ex) {
                         ex.printStackTrace();
                     }
@@ -306,19 +325,249 @@ public class InventoryClickListener implements Listener {
                             Query query = new Query(database.getConnection());
                             String currentParkour = PlainTextComponentSerializer.plainText().serialize(clickedInventory.getItem(0).lore().get(0));
 
-                            query.updateStartType(currentParkour, plate);
+                            if (menuType == PlateType.START) {
+                                query.updateStartType(currentParkour, plate);
+                            } else {
+                                query.updateEndType(currentParkour, plate);
+                            }
 
-                            ParkourStartPlateGUI.openMenu(player, currentParkour);
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+                            EditPlateTypeMenu.openMenu(player, currentParkour, menuType);
                         } catch (SQLException ex) {
                             ex.printStackTrace();
                         }
 
                     } else {
-                        plugin.getLogger().warning("Unknown material: \" + plate");
+                        plugin.getLogger().warning("Unknown material: " + plate);
                     }
                 }
             });
 
         }
+
+        if (menuTitle.equals("Manage Checkpoint")) {
+            event.setCancelled(true);
+
+            Component loreLine = event.getView().getItem(0).getItemMeta().lore().getFirst();
+            Component locationLoreLine = event.getView().getItem(0).getItemMeta().lore().get(1);
+            Location location = LocationHelper.stringToLocation(PlainTextComponentSerializer.plainText().serialize(locationLoreLine));
+            String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+
+            if (displayName.equals("Close")) {
+                clickedInventory.close();
+            }
+
+            if (displayName.equals("Back")) {
+                CheckpointListMenu.openMenu(player, parkourName);
+            }
+
+            if (displayName.equals("Change Type")) {
+                CheckpointPlateType.openMenu(player, parkourName, PlateType.CHECKPOINT, location);
+            }
+
+            if (displayName.equals("Relocate Checkpoint")) {
+                clickedInventory.close();
+
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+
+                    // Remove the old plate and entity
+                    location.getBlock().setType(Material.AIR);
+                    UUID entityUuid = query.getCheckpointDisplay(LocationHelper.locationToString(location));
+                    World world = location.getWorld();
+                    EntityRemove.suppress(entityUuid);
+                    Entity entity = world.getEntity(entityUuid);
+                    assert entity != null;
+                    entity.remove();
+
+                    // Give the player the item
+                    String plateType = query.getCheckpointType(LocationHelper.locationToString(location)).getType().getKey().toString();
+                    ItemStack checkpointItem = ItemMaker.createItem(plateType, 1, "<blue>Relocate Checkpoint", List.of("<gray>Place this where you want", "<gray>your checkpoint to be."));
+                    player.getInventory().setItem(0, checkpointItem);
+                    player.getInventory().setHeldItemSlot(0);
+
+                    // Create a new relocation session
+                    RelocateCheckpoint session = new RelocateCheckpoint();
+                    int parkourId = query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location));
+                    int checkpointIndex = query.getCheckpointIndex(LocationHelper.locationToString(location));
+                    session.setCheckpointIndex(checkpointIndex);
+                    session.setParkourId(parkourId);
+                    RelocateSessionManager.getRelocationSessions().put(player.getUniqueId(), session);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            if (displayName.equals("Delete Checkpoint")) {
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+
+                    int parkourId = query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location));
+                    int checkpointIndex = query.getCheckpointIndex(LocationHelper.locationToString(location));
+
+                    // Remove entity and block position
+                    UUID entityUuid = query.getCheckpointDisplay(LocationHelper.locationToString(location));
+                    query.removeCheckpoint(parkourId, checkpointIndex);
+                    location.getBlock().setType(Material.AIR);
+                    World world = location.getWorld();
+                    EntityRemove.suppress(entityUuid);
+                    Entity entity = world.getEntity(entityUuid);
+                    assert entity != null;
+                    entity.remove();
+
+                    // Update the existing indexes
+                    List<Object[]> oldCheckpoints = query.getCheckpoints(parkourId);
+                    oldCheckpoints.forEach(cp -> {
+                        int oldIndex = (Integer) cp[1];
+                        if (oldIndex >  checkpointIndex) {
+                            int newIndex = oldIndex - 1;
+                            try {
+                                query.updateCheckpointIndex(parkourId, oldIndex, newIndex);
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+
+                    // Update existing holograms
+                    List<Object[]> checkpoints = query.getCheckpoints(parkourId);
+                    String pkName = query.getParkourNameById(parkourId);
+                    checkpoints.forEach(checkpoint -> {
+                        UUID entityUUID = (UUID) checkpoint[4];
+                        int cpIndex = (Integer) checkpoint[1];
+                        Entity displayEntity = world.getEntity(entityUUID);
+
+                        if (!(displayEntity instanceof TextDisplay cpTextDisplay)) return;
+
+                        Map<String, String> cpPlaceholders = Map.of(
+                                "checkpoint", String.valueOf(cpIndex),
+                                "checkpoint_total", String.valueOf(checkpoints.size()),
+                                "parkour_name", pkName
+                        );
+
+                        Component cpText = textFormatter.formatString(ConfigManager.getFormat().getCheckpointPlate(), cpPlaceholders);
+                        cpTextDisplay.text(cpText);
+                    });
+
+                    clickedInventory.close();
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        if (menuTitle.equals("Change Checkpoint Type")) {
+            event.setCancelled(true);
+
+            Component loreLine = event.getView().getItem(0).getItemMeta().lore().getFirst();
+            Component locationLoreLine = event.getView().getItem(0).getItemMeta().lore().get(1);
+            Location location = LocationHelper.stringToLocation(PlainTextComponentSerializer.plainText().serialize(locationLoreLine));
+            String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+
+            if (location == null) {
+                MMUtils.sendMessage(player, "Coulnd't find location of the checkpoint.", MessageType.ERROR);
+            }
+
+            if (displayName.equals("Close")) {
+                clickedInventory.close();
+            }
+
+            if (displayName.equals("Back")) {
+                CheckpointEditMenu.openMenu(player, parkourName, location);
+            }
+
+            final String itemName = displayName;
+
+            PressurePlates.get().forEach(plate -> {
+                if (itemName.equals(PressurePlates.formatPlateName(plate))) {
+                    Material material = Material.matchMaterial(plate.replace("minecraft:", ""));
+
+                    if (material != null) {
+                        location.getBlock().setType(material);
+
+                        try {
+                            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                            Query query = new Query(database.getConnection());
+                            query.updateCheckpointType(LocationHelper.locationToString(location), plate);
+
+                            CheckpointPlateType.openMenu(player, parkourName, PlateType.CHECKPOINT, location);
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                        }
+
+                    } else {
+                        plugin.getLogger().warning("Unknown material: " + plate);
+                    }
+                }
+            });
+
+        }
+
+        if (menuTitle.equals("Checkpoint List")) {
+            event.setCancelled(true);
+
+            if (displayName.equals("Close")) {
+                clickedInventory.close();
+            }
+
+            if (displayName.equals("Back")) {
+                Component loreLine = event.getView().getItem(0).getItemMeta().lore().get(0);
+                String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                MapManageMenu.openMenu(player, parkourName);
+            }
+
+            if (displayName.contains("Checkpoint #")) {
+                Component loreLine = event.getView().getItem(0).getItemMeta().lore().get(0);
+                String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                int checkpointIndex = Integer.parseInt(displayName.replace("Checkpoint #", ""));
+                Location location = null;
+
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+                    int parkourId = query.getParkourIdFromName(parkourName);
+                    location = query.getCheckpointLocation(parkourId, checkpointIndex);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+
+                if (location == null) {
+                    MMUtils.sendMessage(player, "Failed to read the location of the checkpoint.", MessageType.ERROR);
+                    return;
+                }
+
+                CheckpointEditMenu.openMenu(player, parkourName, location);
+            }
+
+            if (displayName.equals("New Checkpoint")) {
+                Component loreLine = event.getView().getItem(0).getItemMeta().lore().get(0);
+                String parkourName = PlainTextComponentSerializer.plainText().serialize(loreLine);
+                clickedInventory.close();
+
+                Map<UUID, String> cache = getNewCheckpointsCache();
+                cache.put(player.getUniqueId(), parkourName);
+
+                String actionId = player.getUniqueId() + "cancel-cp-setup";
+                ItemStack cancelItem = ActionItemMaker.createItem("minecraft:barrier", 1, "<red>Cancel", List.of("<gray>Cancel the checkpoint setup."), actionId);
+                ItemActionHandler.registerAction(actionId, p -> {
+                    p.getInventory().clear();
+                    getNewCheckpointsCache().remove(player.getUniqueId());
+                });
+
+                ItemStack checkpointItem = ItemMaker.createItem("minecraft:heavy_weighted_pressure_plate", 1, "<green>Checkpoint", new ArrayList<>());
+                player.getInventory().setItem(0, checkpointItem);
+                player.getInventory().setItem(1, cancelItem);
+            }
+        }
+    }
+
+    public static Map<UUID, String> getNewCheckpointsCache() {
+        return newCheckpointsCache;
     }
 }
