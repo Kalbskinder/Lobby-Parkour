@@ -21,6 +21,10 @@ public class TextFormatter {
      * @return The formatted Adventure Component.
      */
     public Component formatString(String text, @Nullable OfflinePlayer player, @Nullable Map<String, String> data) {
+        if (text == null) {
+            return Component.empty();
+        }
+
         String formatted = text;
 
         if (data != null) {
@@ -35,6 +39,7 @@ public class TextFormatter {
 
         return MiniMessage.miniMessage().deserialize(formatted);
     }
+
 
     public Component formatString(String text, @Nullable Player player, @Nullable Map<String, String> data) {
         return formatString(text, (OfflinePlayer) player, data);

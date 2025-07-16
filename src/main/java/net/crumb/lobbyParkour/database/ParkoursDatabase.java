@@ -8,9 +8,10 @@ import java.sql.Statement;
 public class ParkoursDatabase {
     private final Connection connection;
 
-    public ParkoursDatabase (String path) throws SQLException {
+    public ParkoursDatabase(String path) throws SQLException {
         connection = DriverManager.getConnection("jdbc:sqlite:" + path);
         Statement statement = connection.createStatement();
+
         statement.execute("""
             CREATE TABLE IF NOT EXISTS parkours (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +34,7 @@ public class ParkoursDatabase {
                 material TEXT NOT NULL,
                 entity_uuid TEXT NOT NULL,
                 FOREIGN KEY (parkour_id) REFERENCES parkours(id) ON DELETE CASCADE
-            )
+            );
         """);
 
         statement.execute("""
@@ -44,7 +45,26 @@ public class ParkoursDatabase {
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 parkour_id INTEGER NOT NULL,
                 FOREIGN KEY (parkour_id) REFERENCES parkours(id) ON DELETE CASCADE
-            )
+            );
+        """);
+
+        statement.execute("""
+            CREATE TABLE IF NOT EXISTS leaderboards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                parkour_id INTEGER NOT NULL,
+                FOREIGN KEY (parkour_id) REFERENCES parkours(id) ON DELETE CASCADE
+            );
+        """);
+
+        statement.execute("""
+            CREATE TABLE IF NOT EXISTS leaderboard_lines (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                location TEXT NOT NULL,
+                entity_uuid TEXT NOT NULL,
+                position INTEGER NOT NULL,
+                leaderboard_id INTEGER NOT NULL,
+                FOREIGN KEY (leaderboard_id) REFERENCES leaderboards(id) ON DELETE CASCADE
+            );
         """);
 
         statement.close();
@@ -59,5 +79,4 @@ public class ParkoursDatabase {
     public Connection getConnection() {
         return connection;
     }
-
 }

@@ -1,12 +1,16 @@
 package net.crumb.lobbyParkour.commands;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.guis.MainMenu;
+import net.crumb.lobbyParkour.systems.LeaderboardManager;
+import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.MMUtils;
+import net.crumb.lobbyParkour.utils.MessageType;
 import net.crumb.lobbyParkour.utils.SoundUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -20,42 +24,74 @@ import java.util.List;
 public class BaseCommand {
     private final LobbyParkour plugin = LobbyParkour.getInstance();
     private static final MiniMessage mm = MiniMessage.miniMessage();
+    private static final LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
     private static final int CENTER_PX = 130;
 
     LiteralArgumentBuilder<CommandSourceStack> baseCommand = Commands.literal("lpk")
             .requires(source -> source.getExecutor().hasPermission("ptz.admin"))
             .executes(ctx -> {
-                    CommandSender sender = ctx.getSource().getSender();
-                    if (sender instanceof Player player) {
-                        MainMenu.openMenu(player);
+                CommandSender sender = ctx.getSource().getSender();
+                if (sender instanceof Player player) {
+                    MainMenu.openMenu(player);
+                    return 1;
+                }
+                return 0;
+            })
+            .then(Commands.literal("help")
+                    .executes(ctx -> {
+                        CommandSender sender = ctx.getSource().getSender();
+                        sender.sendMessage(mm.deserialize("<aqua>/lpk <gray>- Opens the main menu"));
+                        sender.sendMessage(mm.deserialize("<aqua>/lpk credits <gray>- Shows a credits message"));
+                        sender.sendMessage(mm.deserialize("<aqua>/lpk help <gray>- Shows a list of available commands"));
                         return 1;
-                    }
-                    return 0;
-                })
-                .then(Commands.literal("help")
-                        .executes(ctx -> {
-                            CommandSender sender = ctx.getSource().getSender();
-                            sender.sendMessage(mm.deserialize("<aqua>/lpk <gray>- Opens the main menu"));
-                            sender.sendMessage(mm.deserialize("<aqua>/lpk credits <gray>- Shows a credits message"));
-                            sender.sendMessage(mm.deserialize("<aqua>/lpk help <gray>- Shows a list of available commands"));
+                    })
+            )
+            .then(Commands.literal("credits")
+                    .executes(ctx -> {
+                        CommandSender sender = ctx.getSource().getSender();
+                        if (sender instanceof Player player) {
+                            sendCredits(player);
+                        }
+                        return 1;
+                    })
+            )
+            .then(Commands.literal("leaderboard")
+                    .executes(ctx -> {
+                        CommandSender sender = ctx.getSource().getSender();
+                        if (sender instanceof Player player) {
+                            LeaderboardManager leaderboardManager = new LeaderboardManager();
+                            leaderboardManager.spawnLeaderboard(player.getLocation(), "Default");
                             return 1;
-                        })
-                )
-                .then(Commands.literal("credits")
-                        .executes(ctx -> {
-                            CommandSender sender = ctx.getSource().getSender();
-                            if (sender instanceof Player player) {
-                                sendCredits(player);
-                            }
-                            return 1;
-                        })
-                );
+                        }
+                        return 0;
+                    })
+            )
+            .then(Commands.literal("cache")
+                    .executes(ctx -> {
+                        ctx.getSource().getSender().sendMessage(updater.getCache().toString());
+                        return 1;
+                    })
+            )
+            .then(Commands.literal("test")
+                    .then(Commands.argument("message", StringArgumentType.greedyString())
+                            .executes(ctx -> {
+                                String msg = StringArgumentType.getString(ctx, "message");
+                                CommandSender sender = ctx.getSource().getSender();
+                                if (sender instanceof Player player) {
+                                    MMUtils.sendMessage(player, msg, MessageType.NONE);
+                                }
+                                return 1;
+                            })
+                    )
+            );
+
+
     LiteralCommandNode<CommandSourceStack> buildCommand = baseCommand.build();
 
     public LiteralCommandNode<CommandSourceStack> getBuildCommand() {
         return buildCommand;
     }
-
+        
     private void sendCredits(Player player) {
         List<String> lines = List.of(
                 "<gradient:#d81bf5:#fa2dc3>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
@@ -95,8 +131,7 @@ public class BaseCommand {
 
         return " ".repeat(spaces) + mm.serialize(component);
     }
-
-
+        
     private static int getPixelLength(Component component) {
         String plain = MiniMessage.miniMessage().serialize(component).replaceAll("<[^>]+>", ""); // Ignore minimessage tags
         int length = 0;
@@ -111,7 +146,6 @@ public class BaseCommand {
             };
             length += charWidth + 1;
         }
-
         return length;
     }
 }

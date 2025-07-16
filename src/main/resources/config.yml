@@ -59,7 +59,7 @@ formatting:
       spin-enabled: true
 
     maximum-displayed: 10
-    # The personal best will be displayed below the leaderboard
+    # The personal best will displayed below the leaderboard
     personal-best-enabled: false
 
     # %position% -> The score position on the leaderboard (does not include #)
@@ -78,4 +78,6 @@ formatting:
 
 settings:
   leaderboard-update: 1
+  leaderboard-query-update: 60
   parkour-timeout:
+  allow-fly: false

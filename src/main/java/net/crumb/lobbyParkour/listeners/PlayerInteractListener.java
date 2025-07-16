@@ -13,12 +13,15 @@ import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.RayTraceResult;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -105,6 +108,17 @@ public class PlayerInteractListener implements Listener {
             }
         }
 
+        if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) && player.isSneaking()) {
+            RayTraceResult result = player.rayTraceEntities(5);
+            if (result == null) return;
+
+            Entity hitEntity = result.getHitEntity();
+            if (hitEntity instanceof TextDisplay textDisplay) {
+                player.sendMessage("You clicked on a TextDisplay!");
+                event.setCancelled(true); // Optional: prevent other interaction behavior
+            }
+        }
+
         if (event.getAction() == Action.PHYSICAL) {
             Block block = event.getClickedBlock();
             if (block != null && isPressurePlate(block.getType())) {
@@ -129,7 +143,7 @@ public class PlayerInteractListener implements Listener {
                     }
 
                     if (isPkStart) {
-                        parkourName = query.getMapnameByPkSpawn(location);
+                        parkourName = query.getMapNameByPkSpawn(location);
                     } else if (isPkEnd) {
                         parkourName = query.getMapnameByPkEnd(location);
                     } else if (isCheckpoint) {
