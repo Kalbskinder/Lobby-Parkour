@@ -35,7 +35,7 @@ public class LeaderboardManager {
             ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
             Query query = new Query(database.getConnection());
 
-            int parkourId = query.getParkourId(parkourName);
+            int parkourId = query.getParkourIdFromName(parkourName);
             int leaderboardId = query.createLeaderboard(parkourId);
 
             location = location.toCenterLocation();

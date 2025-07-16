@@ -36,7 +36,7 @@ public class BlockBreakListener implements Listener {
 
             for (Location loc : checkLocations) {
                 // Check start location
-                String startMap = query.getMapNameByPkSpawn(loc);
+                String startMap = query.getMapnameByPkSpawn(loc);
                 if (startMap != null) {
                     Location startLoc = query.getStartLocation(startMap);
                     if (startLoc != null && startLoc.equals(loc)) {

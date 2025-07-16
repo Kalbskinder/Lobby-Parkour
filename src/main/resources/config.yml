@@ -59,7 +59,7 @@ formatting:
       spin-enabled: true
 
     maximum-displayed: 10
-    # The personal best will displayed below the leaderboard
+    # The personal best will be displayed below the leaderboard
     personal-best-enabled: false
 
     # %position% -> The score position on the leaderboard (does not include #)

@@ -93,7 +93,7 @@ public class PlayerInteractListener implements Listener {
                     MapManageMenu.openMenu(player, parkourName);
                 } else if (isPkEnd) {
                     // Open the edit menu for the end plate
-                    parkourName = query.getMapnameByPkEnd(location);
+                    parkourName = query.getMapNameByPkEnd(location);
                     if (parkourName == null) return;
                     EditPlateTypeMenu.openMenu(player, parkourName, PlateType.END);
                     return;
@@ -143,9 +143,9 @@ public class PlayerInteractListener implements Listener {
                     }
 
                     if (isPkStart) {
-                        parkourName = query.getMapNameByPkSpawn(location);
+                        parkourName = query.getMapnameByPkSpawn(location);
                     } else if (isPkEnd) {
-                        parkourName = query.getMapnameByPkEnd(location);
+                        parkourName = query.getMapNameByPkEnd(location);
                     } else if (isCheckpoint) {
                         parkourName = query.getParkourNameById(query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location)));
                     }
