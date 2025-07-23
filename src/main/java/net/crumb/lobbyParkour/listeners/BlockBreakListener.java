@@ -49,7 +49,7 @@ public class BlockBreakListener implements Listener {
                 }
 
                 // Check end location
-                String endMap = query.getMapnameByPkEnd(loc);
+                String endMap = query.getMapNameByPkEnd(loc);
                 if (endMap != null) {
                     Location endLoc = query.getEndLocation(endMap);
                     if (endLoc != null && endLoc.equals(loc)) {

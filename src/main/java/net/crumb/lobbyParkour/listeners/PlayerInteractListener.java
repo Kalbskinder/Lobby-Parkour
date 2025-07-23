@@ -13,12 +13,15 @@ import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.RayTraceResult;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -90,7 +93,7 @@ public class PlayerInteractListener implements Listener {
                     MapManageMenu.openMenu(player, parkourName);
                 } else if (isPkEnd) {
                     // Open the edit menu for the end plate
-                    parkourName = query.getMapnameByPkEnd(location);
+                    parkourName = query.getMapNameByPkEnd(location);
                     if (parkourName == null) return;
                     EditPlateTypeMenu.openMenu(player, parkourName, PlateType.END);
                     return;
@@ -102,6 +105,17 @@ public class PlayerInteractListener implements Listener {
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
+            }
+        }
+
+        if ((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) && player.isSneaking()) {
+            RayTraceResult result = player.rayTraceEntities(5);
+            if (result == null) return;
+
+            Entity hitEntity = result.getHitEntity();
+            if (hitEntity instanceof TextDisplay textDisplay) {
+                player.sendMessage("You clicked on a TextDisplay!");
+                event.setCancelled(true); // Optional: prevent other interaction behavior
             }
         }
 
@@ -131,7 +145,7 @@ public class PlayerInteractListener implements Listener {
                     if (isPkStart) {
                         parkourName = query.getMapnameByPkSpawn(location);
                     } else if (isPkEnd) {
-                        parkourName = query.getMapnameByPkEnd(location);
+                        parkourName = query.getMapNameByPkEnd(location);
                     } else if (isCheckpoint) {
                         parkourName = query.getParkourNameById(query.getParkourIdByCheckpointLocation(LocationHelper.locationToString(location)));
                     }
@@ -174,7 +188,7 @@ public class PlayerInteractListener implements Listener {
                         String leavePkActionId = player.getUniqueId() + "leave-pk";
                         String lastCheckpointActionId = player.getUniqueId() + "last-checkpoint-pk";
 
-                        String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer());
+                        String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer(), player);
 
                         ItemActionHandler.registerAction(resetPkActionId, p -> {
                             p.teleport(location);
@@ -251,7 +265,7 @@ public class PlayerInteractListener implements Listener {
                         }
 
                         float timerMillis = ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds();
-                        String timer = ParkourTimer.formatTimer(timerMillis, ConfigManager.getFormat().getTimer());
+                        String timer = ParkourTimer.formatTimer(timerMillis, ConfigManager.getFormat().getTimer(), player);
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
                         player.getInventory().clear();
 
@@ -302,7 +316,7 @@ public class PlayerInteractListener implements Listener {
 
                             session.setLastReachedCheckpointIndex(checkpointIndex);
                             session.setCompletedCheckpoints(checkpointIndex);
-                            String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer());
+                            String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer(), player);
 
                             Component checkpointMessage = textFormatter.formatString(ConfigManager.getFormat().getCheckpointMessage(), player, Map.of(
                                     "parkour_name", parkourName,

@@ -4,6 +4,7 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.crumb.lobbyParkour.commands.BaseCommand;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.listeners.*;
+import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.ConfigManager;
 import net.crumb.lobbyParkour.utils.ItemActionHandler;
 import org.bukkit.Bukkit;
@@ -53,7 +54,7 @@ public final class LobbyParkour extends JavaPlugin {
         saveDefaultConfig();
         startUpMessage();
         registerListeners();
-
+      
         ConfigManager.loadConfig(getConfig());
 
         try {
@@ -62,11 +63,22 @@ public final class LobbyParkour extends JavaPlugin {
             ex.printStackTrace();
             getLogger().severe("Failed to connect to the database! " + ex.getMessage());
             Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
+
         if (!Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            getLogger().warning("Could not find PlaceholderAPI! ");
+            getLogger().warning("Could not find PlaceholderAPI!");
         }
+
+        // Delay the updater init to ensure everything is ready
+        Bukkit.getScheduler().runTask(this, () -> {
+            LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
+            updater.updateCache();
+            updater.updateFormat();
+            updater.startSpinning();
+        });
     }
+
 
     @Override
     public void onDisable() {
