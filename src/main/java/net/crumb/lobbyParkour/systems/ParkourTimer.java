@@ -16,27 +16,30 @@ public class ParkourTimer {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
     private static final String actionbar = ConfigManager.getFormat().getActionBar()
             .replace("%timer%", ConfigManager.getFormat().getTimer());
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     private static final TextFormatter textFormatter = new TextFormatter();
 
     public static boolean isLooping() {
         return looping;
     }
 
-    public static String formatTimer(float time, String message) {
+    public static String formatTimer(float time, String message, Player player) {
         int totalMs = (int) (time * 1000);
         int minutes = (totalMs / 1000) / 60;
         int seconds = (totalMs / 1000) % 60;
         int millis = totalMs % 1000 / 10;
+
+        ParkourSession session = ParkourSessionManager.getSession(player.getUniqueId());
+        int parkourCheckpoint = session.getLastReachedCheckpointIndex();
+        int parkourCheckpointTotal = session.getMaxCheckpoints();
 
         return message
                 .replace("%m%", String.format("%02d", minutes))
                 .replace("%s%", String.format("%02d", seconds))
                 .replace("%ms%", String.format("%02d", millis))
 
-                // TODO: Replace these with the real checkpoints count
-                .replace("%checkpoint%", "0")
-                .replace("%checkpoint_total%", "0");
+
+                .replace("%checkpoint%", String.valueOf(parkourCheckpoint))
+                .replace("%checkpoint_total%", String.valueOf(parkourCheckpointTotal));
     }
 
     public static void setLooping(boolean looping) {
@@ -60,7 +63,7 @@ public class ParkourTimer {
                     // Display actionbar
                     Player player = Bukkit.getPlayer(uuid);
                     if (player != null && player.isOnline()) {
-                        String formattedTime = formatTimer(session.getElapsedSeconds(), actionbar);
+                        String formattedTime = formatTimer(session.getElapsedSeconds(), actionbar, player);
                         Map<String, String> placeholders = Map.of(
                                 "parkour_name", session.getParkourName(),
                                 "player_name", player.getName()

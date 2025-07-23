@@ -45,7 +45,7 @@ formatting:
   # %timer% -> The current timer (formatted previously)
   # %checkpoint% -> The number of the checkpoint
   # %checkpoint_total% -> The total number of checkpoints (excluding start and end)
-  action-bar: "<color:#7ae0ff>%timer%</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>0</color></color><color:#b8b8b8>/10</color> <green>⚑</green>"
+  action-bar: "<color:#7ae0ff>%timer%</color> <color:#39aacc>⌚</color>   <dark_gray>|</dark_gray>   <color:#54ff7f><color:#57ff65>%checkpoint%</color></color><color:#b8b8b8>/%checkpoint_total%</color> <green>⚑</green>"
 
   leaderboard:
     # %parkour_name% -> The name of the parkour
