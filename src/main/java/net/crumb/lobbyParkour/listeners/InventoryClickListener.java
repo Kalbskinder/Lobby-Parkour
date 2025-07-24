@@ -77,84 +77,7 @@ public class InventoryClickListener implements Listener {
 
             if (displayName.equals("🔁 Reload Parkours")) {
                 player.getOpenInventory().close();
-                MMUtils.sendMessage(player, "Reloading all parkours...", MessageType.INFO);
-
-
-                try {
-                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
-                    Query query = new Query(database.getConnection());
-
-                    List<Object[]> starts = query.getAllParkourStarts();
-
-                    for (Object[] data : starts) {
-                        String name = (String) data[0];
-                        Location loc = (Location) data[1];
-                        Material mat = (Material) data[2];
-
-                        loc.getBlock().setType(mat);
-
-                        UUID oldUuid = query.getStartEntityUuid(name);
-                        if (oldUuid != null) {
-                            Entity oldEntity = loc.getWorld().getEntity(oldUuid);
-                            if (oldEntity instanceof TextDisplay) {
-                                EntityRemove.suppress(oldUuid);
-                                oldEntity.remove();
-                            }
-                        }
-
-
-                        Map<String, String> placeholders = Map.of(
-                                "parkour_name", name
-                        );
-                        Component startText = textFormatter.formatString(ConfigManager.getFormat().getStartPlate(), placeholders);
-
-                        Location textDisplayLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
-                        TextDisplay display = loc.getWorld().spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
-                            textDisplay.text(startText);
-                            textDisplay.setBillboard(Display.Billboard.CENTER);
-                        });
-
-                        query.updateStartEntityUuid(name, display.getUniqueId());
-                    }
-
-                    List<Object[]> ends = query.getAllParkourEnds();
-
-                    for (Object[] data : ends) {
-                        String name = (String) data[0];
-                        Location loc = (Location) data[1];
-                        Material mat = (Material) data[2];
-
-                        loc.getBlock().setType(mat);
-
-                        UUID oldUuid = query.getEndEntityUuid(name);
-                        if (oldUuid != null) {
-                            Entity oldEntity = loc.getWorld().getEntity(oldUuid);
-                            if (oldEntity instanceof TextDisplay) {
-                                EntityRemove.suppress(oldUuid);
-                                oldEntity.remove();
-                            }
-                        }
-
-                        Map<String, String> placeholders = Map.of(
-                                "parkour_name", name
-                        );
-                        Component endText = textFormatter.formatString(ConfigManager.getFormat().getEndPlate(), placeholders);
-
-                        Location textDisplayLocation = new Location(loc.getWorld(), loc.getX() + 0.5, loc.getY() + 1.0, loc.getZ() + 0.5);
-                        TextDisplay display = loc.getWorld().spawn(textDisplayLocation, TextDisplay.class, textDisplay -> {
-                            textDisplay.text(endText);
-                            textDisplay.setBillboard(Display.Billboard.CENTER);
-                        });
-
-                        query.updateEndEntityUuid(name, display.getUniqueId());
-                    }
-
-                    MMUtils.sendMessage(player, "Parkours reloaded successfully!", MessageType.INFO);
-
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    MMUtils.sendMessage(player, "There was an error while reloading the parkours!", MessageType.ERROR);
-                }
+                ReloadParkour.reload(player);
             }
 
         }
@@ -269,6 +192,7 @@ public class InventoryClickListener implements Listener {
                 player.teleport(loc);
                 MMUtils.sendMessage(player, "You have been teleported to the start of <white>"+name+"</white>!", MessageType.INFO);
             }
+
             if (displayName.equals("Place Leaderboard")) {
                 Component loreLine = event.getView().getItem(16).getItemMeta().lore().get(1);
                 String name = PlainTextComponentSerializer.plainText().serialize(loreLine);
