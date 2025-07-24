@@ -11,6 +11,7 @@ import net.crumb.lobbyParkour.systems.LeaderboardManager;
 import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.utils.MMUtils;
 import net.crumb.lobbyParkour.utils.MessageType;
+import net.crumb.lobbyParkour.utils.ReloadParkour;
 import net.crumb.lobbyParkour.utils.SoundUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -83,6 +84,15 @@ public class BaseCommand {
                                 return 1;
                             })
                     )
+            )
+            .then(Commands.literal("reload")
+                    .executes(ctx -> {
+                        CommandSender sender = ctx.getSource().getSender();
+                        if (sender instanceof Player player) {
+                            ReloadParkour.reload(player);
+                        }
+                        return 1;
+                    })
             );
 
 
