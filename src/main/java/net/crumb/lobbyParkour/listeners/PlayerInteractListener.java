@@ -307,7 +307,10 @@ public class PlayerInteractListener implements Listener {
                                 return;
                             }
 
+
                             int sessionCheckpointIndex = session.getLastReachedCheckpointIndex();
+                            if (checkpointIndex < sessionCheckpointIndex) return;
+
                             if (checkpointIndex == session.getLastReachedCheckpointIndex()) return;
                             if (checkpointIndex != sessionCheckpointIndex + 1) {
                                 MMUtils.sendMessage(player, ConfigManager.getFormat().getCheckpointSkipMessage());
