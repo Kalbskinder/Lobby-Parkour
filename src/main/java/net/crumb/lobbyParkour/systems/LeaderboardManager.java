@@ -2,18 +2,22 @@ package net.crumb.lobbyParkour.systems;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.UUID;
 
 import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
+import net.crumb.lobbyParkour.listeners.EntityRemove;
 import net.crumb.lobbyParkour.utils.ConfigManager;
 import net.crumb.lobbyParkour.utils.TextFormatter;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemFlag;
@@ -90,8 +94,37 @@ public class LeaderboardManager {
             }
 
             updater.updateCache();
+            updater.updateTimes(parkourId);
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
     }
+
+    public void deleteLeaderboard(int leaderboardId) {
+        try {
+            ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+            Query query = new Query(database.getConnection());
+
+            // Get all lines (UUIDs) associated with the leaderboard
+            var lines = query.getLeaderboardLinesByLeaderboardId(leaderboardId); // You may need to implement this method
+
+            for (UUID uuid : lines) {
+                Entity entity = Bukkit.getEntity(uuid);
+                if (entity != null && !entity.isDead()) {
+                    EntityRemove.suppress(uuid);
+                    entity.remove();
+                }
+            }
+
+            query.deleteLeaderboardLines(leaderboardId);
+
+            // Optionally delete the leaderboard entry itself, if you store it
+            query.deleteLeaderboard(leaderboardId); // You may need to implement this method
+
+            updater.updateCache();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
 }

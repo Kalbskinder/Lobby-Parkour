@@ -6,6 +6,7 @@ import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.CheckpointEditMenu;
 import net.crumb.lobbyParkour.guis.EditPlateTypeMenu;
 import net.crumb.lobbyParkour.guis.MapManageMenu;
+import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
 import net.crumb.lobbyParkour.systems.ParkourSession;
 import net.crumb.lobbyParkour.systems.ParkourSessionManager;
 import net.crumb.lobbyParkour.systems.ParkourTimer;
@@ -37,6 +38,7 @@ public class PlayerInteractListener implements Listener {
     private static final LobbyParkour plugin = LobbyParkour.getInstance();
     private static final TextFormatter textFormatter = new TextFormatter();
     private static String parkourName = "";
+    private static final LeaderboardUpdater updater = LeaderboardUpdater.getInstance();
 
 
     @EventHandler
@@ -274,6 +276,7 @@ public class PlayerInteractListener implements Listener {
                             Query query = new Query(database.getConnection());
                             int id = query.getParkourIdFromName(parkourName);
                             query.saveTime(player.getUniqueId(), id, timerMillis);
+                            updater.updateTimes(id);
                         } catch (SQLException ex) {
                             ex.printStackTrace();
                         }

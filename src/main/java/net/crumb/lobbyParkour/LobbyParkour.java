@@ -76,6 +76,7 @@ public final class LobbyParkour extends JavaPlugin {
             updater.updateCache();
             updater.updateFormat();
             updater.startSpinning();
+            updater.updateStatic();
         });
     }
 

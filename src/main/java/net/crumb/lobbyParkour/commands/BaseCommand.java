@@ -56,34 +56,20 @@ public class BaseCommand {
                     })
             )
             .then(Commands.literal("leaderboard")
-                    .executes(ctx -> {
-                        CommandSender sender = ctx.getSource().getSender();
-                        if (sender instanceof Player player) {
-                            LeaderboardManager leaderboardManager = new LeaderboardManager();
-                            leaderboardManager.spawnLeaderboard(player.getLocation(), "Default");
-                            return 1;
-                        }
-                        return 0;
-                    })
-            )
-            .then(Commands.literal("cache")
-                    .executes(ctx -> {
-                        ctx.getSource().getSender().sendMessage(updater.getCache().toString());
-                        return 1;
-                    })
-            )
-            .then(Commands.literal("test")
-                    .then(Commands.argument("message", StringArgumentType.greedyString())
+                    .then(Commands.argument("parkour", StringArgumentType.greedyString())
                             .executes(ctx -> {
-                                String msg = StringArgumentType.getString(ctx, "message");
+                                String parkour = StringArgumentType.getString(ctx, "parkour");
                                 CommandSender sender = ctx.getSource().getSender();
                                 if (sender instanceof Player player) {
-                                    MMUtils.sendMessage(player, msg, MessageType.NONE);
+                                    LeaderboardManager leaderboardManager = new LeaderboardManager();
+                                    leaderboardManager.spawnLeaderboard(player.getLocation(), parkour);
+                                    return 1;
                                 }
-                                return 1;
+                                return 0;
                             })
                     )
             );
+
 
 
     LiteralCommandNode<CommandSourceStack> buildCommand = baseCommand.build();
@@ -94,16 +80,17 @@ public class BaseCommand {
         
     private void sendCredits(Player player) {
         List<String> lines = List.of(
-                "<gradient:#d81bf5:#fa2dc3>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-                "<center><color:#d81bf5>✦ <bold><gradient:#d81bf5:#fa2dc3>ʟᴏʙʙʏ ᴘᴀʀᴋᴏᴜʀ</gradient> <reset><color:#fa2dc3>✦",
+                "<gradient:#d81bf5:#fa2dc3><st>                                                        </gradient>",
+                "    <color:#d81bf5>⭐ <bold><gradient:#d81bf5:#fa2dc3>ʟᴏʙʙʏ ᴘᴀʀᴋᴏᴜʀ</gradient> <reset><color:#fa2dc3>⭐",
                 "",
-                "<center>Brought to you by:  <gradient:#ffa300:#ff0500>crumb",
-                "<center>Developed by: Kalbskinder & ZetMine",
+                "    <gray>Brought to you by:</gray>  <gradient:#ffa300:#ff0500>crumb",
+                "    <gray>Developed by:</gray> Kalbskinder <gray>&</gray> ZetMine",
                 "",
-                "<center>✦ Join us at ✦",
-                "<center>→ <click:OPEN_URL:https://discord.gg/8xQXBbCa8R><hover:show_text:'<blue>Click to join!'><blue>https://discord.gg/8xQXBbCa8R",
-                "<gradient:#d81bf5:#fa2dc3>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                "    <dark_gray>»</dark_gray> Join us at <dark_gray>«</dark_gray>",
+                "        <dark_gray>→</dark_gray> <click:OPEN_URL:https://discord.gg/8xQXBbCa8R><hover:show_text:'<blue>Click to join!'><blue>https://discord.gg/8xQXBbCa8R    ",
+                "<gradient:#d81bf5:#fa2dc3><st>                                                        </gradient>"
         );
+
 
         lines.forEach(line -> {
             MMUtils.sendMessage(player, deserializeCentered(line));

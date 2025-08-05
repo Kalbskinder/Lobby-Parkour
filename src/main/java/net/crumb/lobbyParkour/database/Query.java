@@ -341,6 +341,129 @@ public class Query {
         return uuids;
     }
 
+    public List<Map.Entry<UUID, Integer>> getTitleLines() throws SQLException {
+        List<Map.Entry<UUID, Integer>> lines = new ArrayList<>();
+        String sql = "SELECT entity_uuid, leaderboard_id FROM leaderboard_lines WHERE position = 0";
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                String uuidString = rs.getString("entity_uuid");
+                int leaderboardId = rs.getInt("leaderboard_id");
+                if (uuidString != null) {
+                    lines.add(new AbstractMap.SimpleEntry<>(UUID.fromString(uuidString), leaderboardId));
+                }
+            }
+        }
+        return lines;
+    }
+
+    public List<Map.Entry<UUID, Integer>> getTimesLines(int parkourId) throws SQLException {
+        List<Map.Entry<UUID, Integer>> lines = new ArrayList<>();
+        String sql = """
+        SELECT ll.entity_uuid, ll.position
+        FROM leaderboard_lines ll
+        JOIN leaderboards lb ON ll.leaderboard_id = lb.id
+        WHERE ll.position > 0 AND lb.parkour_id = ?
+    """;
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String uuidString = rs.getString("entity_uuid");
+                    int position = rs.getInt("position");
+                    if (uuidString != null) {
+                        lines.add(new AbstractMap.SimpleEntry<>(UUID.fromString(uuidString), position));
+                    }
+                }
+            }
+        }
+
+        return lines;
+    }
+
+    public Map<Integer, List<Map.Entry<UUID, Integer>>> getAllTimesLinesForParkour(int parkourId) throws SQLException {
+        Map<Integer, List<Map.Entry<UUID, Integer>>> result = new HashMap<>();
+
+        String sql = """
+        SELECT ll.entity_uuid, ll.position, ll.leaderboard_id
+        FROM leaderboard_lines ll
+        JOIN leaderboards lb ON ll.leaderboard_id = lb.id
+        WHERE lb.parkour_id = ?
+    """;
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("entity_uuid"));
+                    int position = rs.getInt("position");
+                    int leaderboardId = rs.getInt("leaderboard_id");
+
+                    result.computeIfAbsent(leaderboardId, k -> new ArrayList<>())
+                            .add(Map.entry(uuid, position));
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+    public List<Map.Entry<UUID, Float>> getParkourTimes(int parkourId) throws SQLException {
+        List<Map.Entry<UUID, Float>> times = new ArrayList<>();
+        String sql = "SELECT uuid, comp_time FROM times WHERE parkour_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, parkourId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String uuidString = rs.getString("uuid");
+                float time = rs.getFloat("comp_time");
+                if (uuidString != null) {
+                    times.add(new AbstractMap.SimpleEntry<>(UUID.fromString(uuidString), time));
+                }
+            }
+        }
+        return times;
+    }
+
+    public List<UUID> getLeaderboardLinesByLeaderboardId(int leaderboardId) throws SQLException {
+        List<UUID> uuids = new ArrayList<>();
+        String sql = "SELECT entity_uuid FROM leaderboard_lines WHERE leaderboard_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, leaderboardId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String uuidString = rs.getString("entity_uuid");
+                    if (uuidString != null) {
+                        uuids.add(UUID.fromString(uuidString));
+                    }
+                }
+            }
+        }
+
+        return uuids;
+    }
+
+    public void deleteLeaderboardLines(int leaderboardId) throws SQLException {
+        String sql = "DELETE FROM leaderboard_lines WHERE leaderboard_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, leaderboardId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void deleteLeaderboard(int leaderboardId) throws SQLException {
+        String sql = "DELETE FROM leaderboards WHERE id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, leaderboardId);
+            stmt.executeUpdate();
+        }
+    }
+
     public List<Object[]> getCheckpoints(int parkourId) throws SQLException {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT id, cp_index, location, material, entity_uuid FROM checkpoints WHERE parkour_id = ?";

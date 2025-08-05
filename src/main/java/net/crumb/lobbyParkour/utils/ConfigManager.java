@@ -125,7 +125,14 @@ public class ConfigManager {
                 }
 
                 public Material getItem() {
-                    return Material.matchMaterial((String)config.getString(this.path + "item", "minecraft:clock").replace("minecraft:", ""));
+                    String itemName = config.getString(this.path + "item", "minecraft:clock")
+                            .replace("minecraft:", "")
+                            .toUpperCase();
+
+                    Material material = Material.matchMaterial(itemName);
+
+                    // Fallback if the material doesn't exist
+                    return (material != null) ? material : Material.CLOCK;
                 }
 
                 public boolean hasEnchantGlint() {
