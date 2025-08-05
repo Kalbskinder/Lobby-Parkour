@@ -190,7 +190,7 @@ public class PlayerInteractListener implements Listener {
                         String leavePkActionId = player.getUniqueId() + "leave-pk";
                         String lastCheckpointActionId = player.getUniqueId() + "last-checkpoint-pk";
 
-                        String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer());
+                        String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer(), player);
 
                         ItemActionHandler.registerAction(resetPkActionId, p -> {
                             p.teleport(location);
@@ -267,7 +267,7 @@ public class PlayerInteractListener implements Listener {
                         }
 
                         float timerMillis = ParkourSessionManager.getSession(player.getUniqueId()).getElapsedSeconds();
-                        String timer = ParkourTimer.formatTimer(timerMillis, ConfigManager.getFormat().getTimer());
+                        String timer = ParkourTimer.formatTimer(timerMillis, ConfigManager.getFormat().getTimer(), player);
                         ParkourSessionManager.endSession(player.getUniqueId()); // End session
                         player.getInventory().clear();
 
@@ -319,7 +319,7 @@ public class PlayerInteractListener implements Listener {
 
                             session.setLastReachedCheckpointIndex(checkpointIndex);
                             session.setCompletedCheckpoints(checkpointIndex);
-                            String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer());
+                            String timer = ParkourTimer.formatTimer(session.getElapsedSeconds(), ConfigManager.getFormat().getTimer(), player);
 
                             Component checkpointMessage = textFormatter.formatString(ConfigManager.getFormat().getCheckpointMessage(), player, Map.of(
                                     "parkour_name", parkourName,
