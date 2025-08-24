@@ -4,6 +4,7 @@ import net.crumb.lobbyParkour.LobbyParkour;
 import net.crumb.lobbyParkour.database.ParkoursDatabase;
 import net.crumb.lobbyParkour.database.Query;
 import net.crumb.lobbyParkour.guis.*;
+import net.crumb.lobbyParkour.systems.LeaderboardManager;
 import net.crumb.lobbyParkour.systems.ParkourSession;
 import net.crumb.lobbyParkour.systems.RelocateCheckpoint;
 import net.crumb.lobbyParkour.systems.RelocateSessionManager;
@@ -156,6 +157,60 @@ public class InventoryClickListener implements Listener {
                     MMUtils.sendMessage(player, "There was an error while reloading the parkours!", MessageType.ERROR);
                 }
             }
+
+            if (displayName.equals("✯ Parkour Leaderboards")) {
+                LeaderboardMenu.openMenu(player);
+            }
+
+        }
+
+        if (menuTitle.equals("Leaderboard List")) {
+            event.setCancelled(true);
+
+            if (displayName.equals("Back")) {
+                MainMenu.openMenu(player);
+            }
+
+            if (displayName.equals("Close")) {
+                clickedInventory.close();
+            }
+
+            if (displayName.equals("New Leaderboard")) {
+                clickedInventory.close();
+                ItemStack lbItem = ItemMaker.createItem("minecraft:name_tag", 0, "<green>Place Leaderboard", List.of("<gray>Place this where you want", "<gray>your leaderboard to be"));
+                player.getInventory().setItem(0, lbItem);
+            }
+
+            if (displayName.contains("(") && displayName.contains(")")) {
+                int start = displayName.indexOf("#") + 1;
+                int end = displayName.indexOf(")", start);
+                int leaderboardId = Integer.parseInt(displayName.substring(start, end));
+                Location location = null;
+
+                try {
+                    ParkoursDatabase database = new ParkoursDatabase(plugin.getDataFolder().getAbsolutePath() + "/lobby_parkour.db");
+                    Query query = new Query(database.getConnection());
+
+                    location = query.getLeaderboardLocation(leaderboardId);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+
+                if (location == null) {
+                    MMUtils.sendMessage(player, "Failed to teleport you to the leaderboard!", MessageType.ERROR);
+                    return;
+                }
+
+                if (event.isLeftClick()) {
+                    player.teleport(location);
+                } else {
+                    LeaderboardManager leaderboardManager = new LeaderboardManager();
+                    leaderboardManager.deleteLeaderboard(leaderboardId);
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.1f, 2.0f);
+                    player.getInventory().close();
+                }
+            }
+
 
         }
 

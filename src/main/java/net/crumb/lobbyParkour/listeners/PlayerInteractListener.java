@@ -12,7 +12,10 @@ import net.crumb.lobbyParkour.systems.ParkourSessionManager;
 import net.crumb.lobbyParkour.systems.ParkourTimer;
 import net.crumb.lobbyParkour.utils.*;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -20,17 +23,19 @@ import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MenuType;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.view.AnvilView;
 import org.bukkit.util.RayTraceResult;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static net.crumb.lobbyParkour.utils.PressurePlates.isPressurePlate;
 
@@ -336,6 +341,28 @@ public class PlayerInteractListener implements Listener {
                 }
             }
         }
+
+        // Leaderboard item right-click action
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK
+                && player.hasPermission("lpk.admin")
+                && player.getInventory().getItemInMainHand().getType() == Material.NAME_TAG
+        ) {
+            ItemStack stack = player.getInventory().getItemInMainHand();
+            ItemMeta meta = stack.getItemMeta();
+            if (meta == null || !meta.hasDisplayName()) return;
+
+            Component itemNameComponent = meta.displayName();
+            String itemName = PlainTextComponentSerializer.plainText().serialize(Objects.requireNonNull(itemNameComponent));
+            Location eventLocation = Objects.requireNonNull(event.getClickedBlock()).getLocation();
+            Location lbLocation = new Location(eventLocation.getWorld(), eventLocation.getBlockX(), eventLocation.getBlockY() + 1, eventLocation.getBlockZ());
+
+            if (itemName.equals("Place Leaderboard")) {
+                AnvilView anvilInventory = MenuType.ANVIL.create(player, "Enter Parkour Name");
+                anvilInventory.setItem(0, ItemMaker.createItem("minecraft:paper", 1, "Paper", Collections.emptyList()));
+                RenameItemListener.setLbLocation(lbLocation);
+                player.openInventory(anvilInventory);
+            }
+        }
     }
 
     public static boolean compareLocations(Location loc1, Location loc2) {
@@ -345,5 +372,4 @@ public class PlayerInteractListener implements Listener {
                 loc1.getBlockY() == loc2.getBlockY() &&
                 loc1.getBlockZ() == loc2.getBlockZ();
     }
-
 }

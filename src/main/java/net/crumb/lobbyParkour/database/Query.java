@@ -694,6 +694,91 @@ public class Query {
     }
 
 
+    public boolean isLeaderboardLine(UUID entityUUID) throws SQLException {
+        String sql = "SELECT leaderboard_id FROM leaderboard_lines WHERE entity_uuid = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, entityUUID.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("leaderboard_id") == 1;
+                }
+            }
+            return false;
+        }
+    }
+
+    public Map<Integer, String> getLeaderboardNames() throws SQLException {
+        Map<Integer, String> leaderboards = new HashMap<>();
+
+        String sql = """
+            SELECT l.id AS leaderboard_id, p.pk_name
+            FROM leaderboards l
+            JOIN parkours p ON p.id = l.parkour_id
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                int id = rs.getInt("leaderboard_id");
+                String name = rs.getString("pk_name");
+                leaderboards.put(id, name + " (#" + id + ")");
+            }
+        }
+
+        return leaderboards;
+    }
+
+    public List<Location> getLeaderboardLocations() throws SQLException {
+        List<Location> locations = new ArrayList<>();
+
+        String sql = """
+            SELECT ll.location
+            FROM leaderboard_lines ll
+            JOIN leaderboards l ON l.id = ll.leaderboard_id
+            GROUP BY ll.leaderboard_id
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String locStr = rs.getString("location");
+                Location loc = LocationHelper.stringToLocation(locStr);
+                if (loc != null) {
+                    locations.add(loc);
+                }
+            }
+        }
+        return locations;
+    }
+
+    public int getLeaderboardId(UUID entityUUID) throws SQLException {
+        String sql = "SELECT leaderboard_id FROM leaderboard_lines WHERE entity_uuid = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, entityUUID.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("leaderboard_id");
+                }
+            }
+            return 0;
+        }
+    }
+
+    public Location getLeaderboardLocation(int lbId) throws SQLException {
+        String sql = "SELECT location FROM leaderboard_lines WHERE leaderboard_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, lbId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return LocationHelper.stringToLocation(rs.getString("location"));
+                }
+            }
+            return null;
+        }
+    }
+
     public void createLeaderboardLine(int leaderboardId, Location location, UUID entityUuid, int position) throws SQLException {
         String sql = "INSERT INTO leaderboard_lines (location, entity_uuid, position, leaderboard_id) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {

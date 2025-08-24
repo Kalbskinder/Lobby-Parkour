@@ -1,11 +1,13 @@
 package net.crumb.lobbyParkour.commands;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.crumb.lobbyParkour.LobbyParkour;
+import net.crumb.lobbyParkour.guis.LeaderboardMenu;
 import net.crumb.lobbyParkour.guis.MainMenu;
 import net.crumb.lobbyParkour.systems.LeaderboardManager;
 import net.crumb.lobbyParkour.systems.LeaderboardUpdater;
@@ -33,9 +35,8 @@ public class BaseCommand {
                 CommandSender sender = ctx.getSource().getSender();
                 if (sender instanceof Player player) {
                     MainMenu.openMenu(player);
-                    return 1;
                 }
-                return 0;
+                return Command.SINGLE_SUCCESS;
             })
             .then(Commands.literal("help")
                     .executes(ctx -> {
@@ -43,7 +44,7 @@ public class BaseCommand {
                         sender.sendMessage(mm.deserialize("<aqua>/lpk <gray>- Opens the main menu"));
                         sender.sendMessage(mm.deserialize("<aqua>/lpk credits <gray>- Shows a credits message"));
                         sender.sendMessage(mm.deserialize("<aqua>/lpk help <gray>- Shows a list of available commands"));
-                        return 1;
+                        return Command.SINGLE_SUCCESS;
                     })
             )
             .then(Commands.literal("credits")
@@ -52,22 +53,17 @@ public class BaseCommand {
                         if (sender instanceof Player player) {
                             sendCredits(player);
                         }
-                        return 1;
+                        return Command.SINGLE_SUCCESS;
                     })
             )
-            .then(Commands.literal("leaderboard")
-                    .then(Commands.argument("parkour", StringArgumentType.greedyString())
-                            .executes(ctx -> {
-                                String parkour = StringArgumentType.getString(ctx, "parkour");
-                                CommandSender sender = ctx.getSource().getSender();
-                                if (sender instanceof Player player) {
-                                    LeaderboardManager leaderboardManager = new LeaderboardManager();
-                                    leaderboardManager.spawnLeaderboard(player.getLocation(), parkour);
-                                    return 1;
-                                }
-                                return 0;
-                            })
-                    )
+            .then(Commands.literal("leaderboards")
+                    .executes(ctx -> {
+                        CommandSender sender = ctx.getSource().getSender();
+                        if (sender instanceof Player player) {
+                            LeaderboardMenu.openMenu(player);
+                        }
+                        return Command.SINGLE_SUCCESS;
+                    })
             );
 
 

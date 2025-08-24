@@ -66,7 +66,7 @@ public class MapManageMenu {
 
     public static void openRenameAnvil(Player player, String parkourName) {
         AnvilView anvilInventory = MenuType.ANVIL.create(player, "Rename Parkour");
-        ArrayList<String> emptyLore = new ArrayList<String>();
+        ArrayList<String> emptyLore = new ArrayList<>();
         anvilInventory.setItem(0, ItemMaker.createItem("minecraft:paper", 1, parkourName, emptyLore));
         player.openInventory(anvilInventory);
     }
